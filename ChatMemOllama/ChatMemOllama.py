@@ -8,6 +8,7 @@ import logging
 import uvicorn
 import ollama
 import threading 
+ 
 import time  
 import mem0
 
@@ -74,9 +75,9 @@ class andim(): # 管理数据加密解密
         self.A = "初始消息"
         self.messages = [{
             "role": "system", 
-            "content": '(默认说中文)你是微信公众号xxxxxxxx的AI助手，你可以和我聊天。负责解答用户关于这个公众号的疑惑。你的管理员叫xxxxxxx。openid:xxxxxxxxxxx'
+            "content": '(默认说中文)你是微信公众号LIghtJUNction的AI助手，你可以和我聊天。负责解答用户关于这个公众号的疑惑。你的管理员叫lightjunction。openid:ofw1V6cthdHGSsE9UR0ygAv7PZ5c'
         }]
-        self.status = {} # 管理用户状态 防止被打断
+        self.status = {}
     async def get_msg_info(self,request: Request): # 获取请求参数 并检查
         msg_info={
             'timestamp': request.query_params.get('timestamp'),
@@ -137,7 +138,7 @@ class andim(): # 管理数据加密解密
                 else:
                     CHAT = threading.Thread(target=lambda: self.chat_whth_ollama(msg_info)) 
                     CHAT.start()
-                    A = "请稍后发送继续获取结果"
+                    A = "请稍后发送*继续*获取结果"
 
             else:
                 A = "不支持的消息类型"
@@ -173,10 +174,15 @@ class andim(): # 管理数据加密解密
 
         Q_memory,privious_memory = self.memory[openid]
         massages = self.messages
+        memory_massage = {
+            "role": "system",
+            "content": f"关于Q的记忆{Q_memory}\n全部记忆{privious_memory}",
+        }
         message = {
             "role": "user",
-            "content": f"关于问题{Q}的提问&回答记忆：{Q_memory}。前面所有的提问&回答记忆：{privious_memory} 当前用户openid:{msg_info['openid']}",
+            "content": Q,
         }
+        massages.append(memory_massage)
         massages.append(message)
 
 
@@ -230,7 +236,7 @@ if __name__ == '__main__':
 
     ollama_client = ollama.Client()
     m = mem0.Memory.from_config(config)    # 耗时
-    lightjunction = andim(WECHAT_TOKEN = "xxxxxxxxx",APPID = "xxxxxxxxxxx",EncodingAESKey = "xxxxxxxxxxxx",mem=m,ollama=ollama_client)
+    lightjunction = andim(WECHAT_TOKEN = "xxxxxxxxxxxx",APPID = "xxxxxxxxxxxxxxx",EncodingAESKey = "xxxxxxxxxxxxxxxx",mem=m,ollama=ollama_client)
     # 管理员为核心！
 
     app = FastAPI()
