@@ -8,7 +8,7 @@ import logging
 import uvicorn
 import ollama
 import threading 
- 
+
 import time  
 import mem0
 
@@ -64,20 +64,21 @@ logger = logging.getLogger(__name__)
 
 
 class andim(): # 管理数据加密解密
-    def __init__(self,WECHAT_TOKEN,APPID,EncodingAESKey,mem,ollama):
+    def __init__(self,WECHAT_TOKEN,APPID,EncodingAESKey,mem,ollama,ollama_async):
         self.WECHAT_TOKEN = WECHAT_TOKEN
         self.APPID = APPID
         self.EncodingAESKey = EncodingAESKey
         self.mem = mem          # 管理记忆
         self.ollama = ollama     # 本地ai模型
+        self.ollama_async = ollama_async
         self.crypto = WeChatCrypto(self.WECHAT_TOKEN, self.EncodingAESKey, self.APPID) # 加密解密
         self.memory = {}
-        self.A = "初始消息"
+        self.A = {}
         self.messages = [{
             "role": "system", 
-            "content": '(默认说中文)你是微信公众号LIghtJUNction的AI助手，你可以和我聊天。负责解答用户关于这个公众号的疑惑。你的管理员叫lightjunction。openid:ofw1V6cthdHGSsE9UR0ygAv7PZ5c'
-        }]
+            "content": '请你默认说中文'}]
         self.status = {}
+        self.Progressbar = {}
     async def get_msg_info(self,request: Request): # 获取请求参数 并检查
         msg_info={
             'timestamp': request.query_params.get('timestamp'),
@@ -96,11 +97,11 @@ class andim(): # 管理数据加密解密
             raise HTTPException(status_code=403, detail="Invalid signature")
         return msg_info
 
-
     async def decode(self,msg_info):#解密函数 同
         msg_xml = self.crypto.decrypt_message(msg_info['body'], msg_info["msg_signature"], msg_info["timestamp"], msg_info["nonce"])
         msg = parse_message(msg_xml)
         msg_info["msg"] = msg
+
         return msg_info # 添加解密解析后的msg
     
     async def encode(self,A,msg_info):#加密函数  返回加密数据包 需要msg
@@ -117,22 +118,27 @@ class andim(): # 管理数据加密解密
 
     async def post(self,request: Request,AdminNotice = None): # post请求，解密消息并加密回复 > 从参数中提取msg_info并保存 > 按照openid建立用户对象字典和消息字典 admin对象只允许有一个 admin管理其他用户
         msg_info = await self.get_msg_info(request)
+        openid = msg_info["openid"]
         if AdminNotice is None:
             msg_info = await self.decode(msg_info)
-            if msg_info["msg"].source not in self.status:
-                self.status[msg_info["msg"].source] = False 
-            
-
-            logger.debug(f"用户{msg_info['openid']}提问: {msg_info["msg"].content}")
+            if openid not in self.status:
+                self.status[openid] = False 
+            if openid not in self.A:
+                self.A[openid] = ''
+            if openid not in self.Progressbar:
+                self.Progressbar[openid] = '初始化！进度：0%'
             
             
             if msg_info["msg"].type == "text": # 以下是关键词回复
                 if msg_info["msg"].content == "继续":
                     if self.status[msg_info["openid"]] == True:
-                        A = self.A
+                        A = self.A[msg_info["openid"]] # 返回给用户
                         self.status[msg_info["openid"]] = False #复位状态
                     else:
-                        A = "请稍后-正在查询记忆----正在生成回复------正在保存记忆------"
+                        response = await self.ollama_async.generate(model="llama3.1:latest" , prompt = "继续继续，你好了没有？能不能快点？",system = "使用中文回答，并告诉用户请耐心等待，因为处理记忆和生成回复比较耗费时间，语气幽默尽量带表情符号，显得更可爱,你的目标就是尽快回复用户，让用户耐心等待，所以你的回复尽量简短，别忘了幽默有趣可爱,记得让用户稍后再发送‘继续’." , stream = False) # 改为调用ollama  变着花样回复用户请稍后
+                        
+                        A = response["response"] + self.Progressbar[openid]
+
                 elif msg_info["msg"].content == "测试":
                     A = "发送消息测试成功！"
                 else:
@@ -144,7 +150,6 @@ class andim(): # 管理数据加密解密
                 A = "不支持的消息类型"
 
             #
-            
             result = await self.encode(A,msg_info)
 
         else:
@@ -170,13 +175,26 @@ class andim(): # 管理数据加密解密
         get_memory.start()
 
         addQ.join()
+        self.Progressbar[openid] = "保存记忆完成！进度：20%"
         get_memory.join()
+        self.Progressbar[openid] = "获取记忆完成！进度：40%"
 
-        Q_memory,privious_memory = self.memory[openid]
+        Q_memory_orgin,previous_memory_orgin = self.memory[openid]
+
+
+        # 提取Q_memory中的id, memory, created_at  
+        Q_memory = [{'id': result['id'], 'memory': result['memory'], 'created_at': result['created_at']} for result in Q_memory_orgin['results']]  
+
+        # 提取previous_memory中的id, memory, created_at  
+        previous_memory = [{'id': result['id'], 'memory': result['memory'], 'created_at': result['created_at']} for result in previous_memory_orgin['results']]  
+
+
+        logger.debug(f"Q_memory：{Q_memory} previous_memory：{previous_memory}")
+
         massages = self.messages
         memory_massage = {
             "role": "system",
-            "content": f"关于Q的记忆{Q_memory}\n全部记忆{privious_memory}",
+            "content": f"关于Q的记忆{Q_memory}\n全部记忆{previous_memory}",
         }
         message = {
             "role": "user",
@@ -185,16 +203,17 @@ class andim(): # 管理数据加密解密
         massages.append(memory_massage)
         massages.append(message)
 
-
+        self.Progressbar[openid] = "获取完记忆开始生成ai回复！进度：50%"
         response =self.ollama.chat(model="llama3.1:latest",messages=massages,stream=False)
+        self.Progressbar[openid] = "ai回复完成！进度：99%,请发送继续获取！"
 
         A = response["message"]["content"]
 
 
-        self.A = A
+        self.A[openid] = A
 
         
-        addA = threading.Thread(target=lambda: m.add(f"助理:{A}",user_id=msg_info["openid"]))
+        addA = threading.Thread(target=lambda: m.add(f"助理:{A}",user_id=openid))
 
         
         addA.start()
@@ -206,6 +225,7 @@ class andim(): # 管理数据加密解密
         logger.debug(f"回复: {A}")        
         
         return A
+
 
     def get_memory(self,msg_info):
         Q = msg_info["msg"].content
@@ -222,21 +242,22 @@ class andim(): # 管理数据加密解密
         Q_memory = m.search(Q,user_id= openid) 
         logger.info(f"记忆搜索完成：{Q_memory}-----------user_id：{openid}")    
         logger.info(f"开始获取先前记忆") 
-        privious_memory = m.get_all(user_id=openid)
-        logger.info(f"获取先前记忆完成：{privious_memory}-----------user_id:{openid}")   
+        previous_memory = m.get_all(user_id = openid)
+        logger.info(f"获取先前记忆完成：{previous_memory}-----------user_id:{openid}")   
 
 
-        self.memory[openid] = [Q_memory,privious_memory]
+        self.memory[openid] = [Q_memory,previous_memory]
 
         
-        return Q_memory,privious_memory
+        return Q_memory,previous_memory
 
 
 if __name__ == '__main__':
 
     ollama_client = ollama.Client()
+    ollama_async_client = ollama.AsyncClient()
     m = mem0.Memory.from_config(config)    # 耗时
-    lightjunction = andim(WECHAT_TOKEN = "xxxxxxxxxxxx",APPID = "xxxxxxxxxxxxxxx",EncodingAESKey = "xxxxxxxxxxxxxxxx",mem=m,ollama=ollama_client)
+    lightjunction = andim(WECHAT_TOKEN = "xxxxxx",APPID = "xxxxxxx",EncodingAESKey = "xxxxxxx",mem=m,ollama=ollama_client,ollama_async = ollama_async_client)
     # 管理员为核心！
 
     app = FastAPI()
