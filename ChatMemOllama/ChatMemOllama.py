@@ -63,7 +63,7 @@ logging.basicConfig(level=logging.DEBUG, format='\033[94m%(levelname)s: \033[93m
 logger = logging.getLogger(__name__)
 
 
-class andim(): # 管理数据加密解密
+class admin(): # 管理数据加密解密
     def __init__(self,WECHAT_TOKEN,APPID,EncodingAESKey,mem,ollama,ollama_async):
         self.WECHAT_TOKEN = WECHAT_TOKEN
         self.APPID = APPID
@@ -257,7 +257,7 @@ if __name__ == '__main__':
     ollama_client = ollama.Client()
     ollama_async_client = ollama.AsyncClient()
     m = mem0.Memory.from_config(config)    # 耗时
-    lightjunction = andim(WECHAT_TOKEN = "xxxxxx",APPID = "xxxxxxx",EncodingAESKey = "xxxxxxx",mem=m,ollama=ollama_client,ollama_async = ollama_async_client)
+    lightjunction = admin(WECHAT_TOKEN = "xxxxxx",APPID = "xxxxxxx",EncodingAESKey = "xxxxxxx",mem=m,ollama=ollama_client,ollama_async = ollama_async_client)
     # 管理员为核心！
 
     app = FastAPI()
