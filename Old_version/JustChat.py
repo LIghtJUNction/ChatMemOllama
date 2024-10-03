@@ -25,13 +25,17 @@ logger = logging.getLogger(__name__)
 
 
 # 微信公众号配置
-WECHAT_TOKEN = '自定义token'
-APPID = '公众号id'
-APPSECRET = '唯一的密钥'
-EncodingAESKey = '随机生成的加密aeskey'
+WECHAT_TOKEN = 'xxxxx'
+APPID = 'xxxx'
+APPSECRET = 'xxxx'
+EncodingAESKey = 'xxxx'
+
+
+# 定义最大聊天记录数
+MAX_HISTORY_SIZE = 50
 
 # Ollama AI 初始提示
-prompt = '我是Meta研发的llama3.1，尊敬的Meta开发者你好！\n' # 系统提示词
+prompt = '我是一个有趣的聊天机器人,[微笑]\n'
 
 # 用户聊天记录的持久化目录
 chat_history_dir = './chat_histories'
@@ -98,13 +102,18 @@ def load_user_history(openid):
 # 保存用户的聊天历史记录（使用文件锁）
 def save_user_history(openid, messages):
     user_file = os.path.join(chat_history_dir, f"{openid}.json")
+    
+    # 限制聊天记录数量
+    if len(messages) > MAX_HISTORY_SIZE:
+        messages = messages[-MAX_HISTORY_SIZE:]  # 只保留最新的k条记录
+    
     with open(user_file, 'w', encoding='utf-8') as f:
         portalocker.lock(f, portalocker.LOCK_EX)  # 排他锁（写锁）
         json.dump(messages, f, ensure_ascii=False, indent=2)
         portalocker.unlock(f)
 
-# 处理 Ollama AI 回复的逻辑
 async def handle_ollama_reply(openid, user_input):
+    logger.debug(f"用户输入: {user_input}")
     # 加载该用户的聊天历史记录
     messages = load_user_history(openid)
 
@@ -115,7 +124,7 @@ async def handle_ollama_reply(openid, user_input):
     message = {'role': 'assistant', 'content': ''}  # 定义 AI 回复的消息
     content_out = ''
 
-    async for response in await client.chat(model='llama3.1', messages=messages, stream=True): # 非流式传输
+    async for response in await client.chat(model='llama3.1', messages=messages, stream=True):
         if response['done']:
             break
         content = response['message']['content']
@@ -135,3 +144,6 @@ async def handle_ollama_reply(openid, user_input):
 if __name__ == '__main__':
     # 启动本地服务器
     app.run(host='0.0.0.0', port=8000)
+
+
+
