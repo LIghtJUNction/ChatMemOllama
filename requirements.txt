@@ -1,0 +1,6 @@
+Flask==2.1.1
+FastAPI==0.78.0
+WeChatPy==1.8.14
+ollama==0.1.0
+portalocker==2.3.2
+uvicorn==0.17.6
