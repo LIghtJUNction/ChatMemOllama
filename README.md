@@ -1,44 +1,62 @@
-# ChatMemOllama
+## 项目简介
 
-一个个人微信公众号聊天机器人👀️ ，使用本地 ai 模型（ollma🚀️  提供），以及 mem0 管理记忆(测试)
+ChatMemOllama 是一个个人微信公众号聊天机器人，结合了本地 AI 模型（由 Ollama 提供）和 mem0 记忆管理功能。该项目旨在提供一个智能、个性化的聊天体验。
 
-> 联系我--email: lightjunction.me@gmail.com
+## 功能特性
 
-## 注意 目前正在测试中
+- **本地 AI 模型**：使用 Ollama 提供的本地 AI 模型进行对话。
+- **记忆管理**：通过 mem0 管理用户的聊天记忆，提供更连贯的对话体验。
+- **多用户支持**：支持多个用户同时进行对话（测试版存在逻辑问题）。
+- **快速响应**：尽量在 5 秒内回复用户，超时情况下会提示用户等待。
 
-请使用 old_version 以获得更好的聊天体验
+## 安装与使用
 
-新版正在开发测试
+### 环境要求
 
-## issue
+- Python 3.7+
+- Flask
+- FastAPI
+- WeChatPy
+- Ollama
 
-* 仓库里的测试版 多人聊天逻辑问题
+### 安装步骤
 
+1. 克隆仓库：
+    ```bash
+    git clone https://github.com/yourusername/ChatMemOllama.git
+    cd ChatMemOllama
+    ```
 
-* 使用 mem0 添加 提取记忆(速度慢,已经发布，仅供代码参考测试),不应该时刻调用，应该仅作为保存长期记忆使用
+2. 安装依赖：
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-## 正在开发
+3. 配置环境变量：
+    ```bash
+    export WECHAT_TOKEN='your_wechat_token'
+    export APPID='your_appid'
+    export APPSECRET='your_appsecret'
+    export EncodingAESKey='your_encoding_aes_key'
+    ```
 
-* [ ] 融合第一版和第二版
-* [ ] 仅在关键处调用 mem0 保存和加载记忆("运用 tool_call : function 让模型自主决策是否需要加载之前的记忆")
-* [ ] 处理微信 5 秒回复时间限制，如果遇到需要超过 5 秒时间回答用户的情况先返回提示，让用户等待（关键词：继续）
-* [ ] 尽量快的回答用户
-* [ ] 加入联网查询功能
-* [ ] 添加对其他微信消息的处理
+4. 运行应用：
+    ```bash
+    python justchat.py
+    ```
 
-## 建议
+## 贡献指南
 
-自己部署作为个人 ai 助理时，系统提示词写在 modelfile 里更好，详细方法请见 ollama 文档
+欢迎任何形式的贡献！请确保在提交 PR 之前阅读以下指南：
 
+1. Fork 仓库并创建一个新的分支。
+2. 提交您的修改并推送到您的分支。
+3. 创建一个 Pull Request 并描述您的更改。
 
+## 许可证
 
-## 个人对ai记忆的看法
+本项目基于 Apache 2.0 许可证进行分发。详情请参阅 [LICENSE](./LICENSE) 文件。
 
-本质没有记忆，只有上下文
+## 联系方式
 
-因此让ai拥有记忆最根本的做法就是在模型内部实现一个记忆神经网络层----以参数的形式将记忆内化于模型之中，并且是模块化的加载方式
-
-challenges:
-
-1. 对算力有要求
-2. 将记忆以参数方式储存的具体方式
+如有任何问题或建议，请通过 email 联系我：lightjunction.me@gmail.com
