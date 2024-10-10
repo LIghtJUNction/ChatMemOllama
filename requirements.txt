@@ -4,3 +4,4 @@ WeChatPy==1.8.14
 ollama==0.1.0
 portalocker==2.3.2
 uvicorn==0.17.6
+cryptography==43.0
