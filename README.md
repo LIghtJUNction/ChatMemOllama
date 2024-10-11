@@ -26,7 +26,7 @@ ChatMemOllama 是一个个人微信公众号聊天机器人，结合了本地 AI
 
 1. 克隆仓库：
     ```bash
-    git clone https://github.com/yourusername/ChatMemOllama.git
+    git clone https://github.com/LIghtJUNction/ChatMemOllama.git
     cd ChatMemOllama
     ```
 
