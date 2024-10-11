@@ -21,9 +21,12 @@ import re # 用于正则匹配
 import pickle # 用于保存对象
 import os # 用于文件操作
 import datetime # 用于处理日期和时间
+import _thread # 用于多线程
+
 
 class WechatConfig():
-    def __init__(self):
+    def __init__(self,crypto):
+        self.crypto = crypto
         """
         初始化
         功能：
@@ -51,25 +54,41 @@ class WechatConfig():
             self.AdminID = config["AdminID"]
             self.mem0config = config["mem0config"]
             self.model = config["model"]
-            self.su_key = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+            self.verify_status = config["verify_status"]
+            if self.verify_status == "False":
+                self.su_key = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+                # 保存 su_key 到配置文件
+                config["su_key"] = self.su_key
+            # 将指针移动到文件开头
+            f.seek(0)
+            # 将更新后的 config 写回文件
+            json.dump(config, f, indent=4)
+            # 截断文件以防止新内容比旧内容短时出现残留
+            f.truncate()
 
+
+        # 从目录 ./ChatMemOllama/Users 读取用户对象并保存在字典 self.users 中
         self.users = {}
         # 读取用户对象文件夹 遍历后按照 openid:obj 成对保存在字典中 空值不报错
         try:
             user_folder = "./Users"
             for userid in os.listdir(user_folder):
-                with open(f"./User/{userid}", "rb") as f:
-                    self.users[userid] = pickle.load(f) # 加载用户对象
+                user_file_path = os.path.join(user_folder, userid)
+                try:
+                    if os.path.getsize(user_file_path) > 0:  # 检查文件是否为空
+                        with open(user_file_path, "rb") as f:
+                            self.users[userid] = pickle.load(f) # 加载用户对象
+                    else:
+                        print(f"文件 {user_file_path} 是空的，跳过加载。")
+                except (EOFError, pickle.UnpicklingError):
+                    print(f"无法加载文件 {user_file_path}，文件可能已损坏或为空。")
         except FileNotFoundError:
-            print(f"文件夹 {user_folder} 不存在,请创建文件夹以保存用户对象。")
-        except Exception as e:
-            print(f"读取用户对象时发生错误: {e} 也许是第一次运行还没有用户(非管理)对象，忽略即可。")
+            print(f"文件夹 {user_folder} 不存在，请创建文件夹以保存用户对象。")
         
         self.AI_system = AIsystem(self.model ,self )
 
-
     def set_config(self, **kwargs):
-        valid_keys = ["WECHAT_TOKEN", "APPID", "AESKey", "AdminID"]
+        valid_keys = ["WECHAT_TOKEN", "APPID", "AESKey", "AdminID", "mem0config", "su_key", "model", "verify_status"]
         with open("./config.json", "r") as f:
             config = json.load(f)
         
@@ -81,19 +100,23 @@ class WechatConfig():
         with open("./config.json", "w") as f:
             json.dump(config, f, ensure_ascii=False, indent=4)
 
-    async def check_signature(self, request):  # 检查微信消息签名
+    def save_user(self, user):
+        # with open(f"./Users/{user.openid}", "wb") as f:
+        #     pickle.dump(user, f)
+        print("保存用户对象 todo")
+
+    def delete_user(self, openid):
+        os.remove(f"./Users/{openid}")
+
+    async def check(self, request):  # 检查微信消息签名
+        msg_info = await self.get_msg_info(request)
         try:
-            check_signature(self.WECHAT_TOKEN, request.query_params["signature"], request.query_params["timestamp"], request.query_params["nonce"])
+            check_signature(self.WECHAT_TOKEN, msg_info["signature"], msg_info["timestamp"], msg_info["nonce"])
         except InvalidSignatureException:
-            return "无效的签名"
-        except InvalidAppIdException:
-            return "无效的AppID"
-        return "成功"
+            print("无效的微信签名请求")
+            raise HTTPException(status_code=403, detail="Invalid signature")
+        return msg_info
 
-    def get_crypto(self):
-
-        self.crypto = WeChatCrypto(self.WECHAT_TOKEN, self.AESKey, self.APPID)
-        return self.crypto
 
     async def get_msg_info(self, request):
         msg_info = {
@@ -108,8 +131,6 @@ class WechatConfig():
         return msg_info
 
     async def decode(self, msg_info):
-        self.get_crypto()
-
         msg_xml = self.crypto.decrypt_message(msg_info['body'], msg_info["msg_signature"], msg_info["timestamp"], msg_info["nonce"])
         msg = parse_message(msg_xml)
         msg_info["msg"] = msg
@@ -125,14 +146,12 @@ class WechatConfig():
         return result # 加密后的xml
     
     async def GET(self,request):  # 相当于收到GET请求执行的主函数
-        print(await self.check_signature(request))
-        msg_info = await self.get_msg_info(request)
+        msg_info = await self.check(request)
         return msg_info["echo_str"]
 
     async def POST(self,request):  # 相当于收到POST请求执行的主函数
-        print(await self.check_signature(request))
-        msg_info = await self.get_msg_info(request)
-        msg_info = await self.decode(msg_info) # 解密并解析消息
+        msg_info = await self.check(request)
+        msg_info = await self.decode(msg_info)
         # 这里开始处理消息 用户提问是 msg_info["msg"].content ， 消息类型：msg_info["msg"].type 用户openid：msg_info["msg"].source 
         Q = msg_info["msg"].content
 
@@ -161,23 +180,32 @@ class WechatConfig():
         if (openid not in self.users and len(self.users) >= 1 ):
             # 嗨嗨嗨
             self.users[openid] = user(openid,self.AI_system) # 欢迎新用户 & 初始化新用户
+            self.save_user(self.users[openid]) # 保存用户对象
             A = await self.users[openid].pipe(Q,init = True ) # 初始化响应
 
 
         elif (openid not in self.users and len(self.users) == 0 ): # 用户0，享有root权限
             self.set_config(AdminID = openid) # 记录管理员id
             self.users[openid] = Admin(openid,self.AI_system,self) # 初始化管理员
+            self.save_user(self.users[openid])
             A = await self.users[openid].pipe(Q,init = True , IsAdmin = True) # 初始化响应
 
-        elif openid in self.users:
-            # 在AI_system内设置超时为4秒
-            A = await self.AI_system.AI_call_stream(openid,Q)
+        elif openid in self.users: # 第一层 关键词回复
+            if Q == self.su_key :
+                self.users[openid].sudo = "True"
 
+                A = "管理员,你好!🤗     |\n *已进入管理员菜单🤖 \n *请输入 help 查看帮助😶‍🌫️"
+            elif Q == "sudo su":
+                if openid == self.AdminID:
+                    self.users[openid].sudo = "True"
+                    A = "管理员,你好!🤗     |\n *已进入管理员菜单🤖 \n *请输入 help 查看帮助😶‍🌫️"
+                else:
+                    A = "你没有权限进入管理员模式/（请检查你是否为用户零）"
+            elif self.users[openid].sudo == "True":
+                A = self.users[openid].AdminMenu(Q)
+            else:
+                A = await self.users[openid].pipe(Q) # 传到用户处理
 
-
-        # 调度消息
-        # 检查是否有未处理消息
-        
         return A
 
 # AIsystem可以访问Wecahtconfig
@@ -185,30 +213,64 @@ class AIsystem():
     def __init__(self,model,wechat_config : WechatConfig): 
         self.model = model
         self.wechat_config = wechat_config
-        self.ollama_client = ollama.Client()
-        self.ollama_async_client = ollama.AsyncClient()
+        self.ollama_client = {} # 共用一个客户端可能导致回复窜流问题
+        self.ollama_async_client = {} # 异步客户端
         self.mem0 = mem0.Memory.from_config(wechat_config.mem0config)
-        self.task = {}
-
-
-
+        self.active_chats = {}  # 记录正在处理的用户对话状态
+        self.messages = {}  # 记录用户对话历史
     def AI_kernel(self):
         
         pass
 
-    async def AI_call_stream(self,openid , Q):
-        # 开始计时4秒 流式生成回复
-        start_time = time.time()
 
-        async for response in self.ollama_async_client(model="llama3.1:latest", messages=self.wechat_config.users[openid].messages, stream=True):
-            response_time = datetime.fromisoformat(response['created_at'].replace("Z", "+00:00")).timestamp()
+    async def AI_call_stream(self, openid, Q):
+        if openid not in self.active_chats:
+            self.ollama_async_client[openid] = ollama.AsyncClient()
+            self.messages[openid] = [{"role": "system", "content": "你是一个人"}]
+            self.active_chats[openid] = {"done": False, "content": ""}
+        # 检查用户是否已有正在进行的对话
+    
+        elif openid in self.active_chats and not self.active_chats[openid].get("done", True):
+            return "请耐心等待"  # 如果有未完成的对话，拒绝新消息
 
-            
+        self.messages[openid].append({"role": "user", "content": Q})
+        # 设置用户状态为活跃并初始化对话片段
+        self.active_chats[openid] = {"done": False, "content": ""}
+
+        start_time = asyncio.get_event_loop().time()
+        response_content = ""  # 累计片段
+        last_send_time = start_time
+
+        # 模拟异步对话生成
+        async for response in await self.ollama_async_client[openid].chat(model=self.model, messages=self.messages[openid], stream=True):
+            # 收集并保存生成的内容片段
+            content = response["message"]["content"]
+            response_content += content
+            self.active_chats[openid]["content"] = response_content
+
+            current_time = asyncio.get_event_loop().time()
+
+            # 如果对话结束，标记完成并返回完整内容
+            if response["done"]:
+                self.active_chats[openid]["done"] = True
+                return response_content
+
+            # 超过4秒则提前发送
+            if current_time - start_time > 4:
+                # 向用户发送已生成的片段
+                response_content = ""  # 清空已发送的内容以避免重复发送
+                last_send_time = current_time
+
+            # 每次生成新片段后等待片刻，以降低发送频率
+            await asyncio.sleep(0.1)
+
+        # 确保彻底清理用户状态
+        self.active_chats[openid]["done"] = True
 
 
     def AI_tools(self):
-        pass
 
+        pass
 
 
 # user实例 无法调用wechatconfig ，可以调用AIsystem
@@ -238,28 +300,61 @@ class user():
         if init and not IsAdmin: 
             A = "欢迎！ 🤗 你可以直接用自然语言问我提出你的要求，你还可以查看 我的历史文章：README.MD"
         elif init and IsAdmin :
-            A = "管理员你好！已保存至config.json，关于如何进入管理员模式，请查看config.json - 'su_key' 的值 ！并输入key进行鉴权！"
+            A = "管理员你好！🤗 \n 已保存至config.json! \n 关于如何进入管理员模式，请查看config.json - 'su_key' 的值 ！并输入key进行鉴权！"
         else: # 非首次使用，正常逻辑
             print(f"用户 ： {Q} ")
-            A = await self.AI_system.AI_call(Q)
+            A = await self.AI_system.AI_call_stream(self.openid,Q)
         return A
     
+
 
 class Admin(user):
     def __init__(self, openid , model, wechat_config :WechatConfig ):
         super().__init__(openid,model)  # 继承user类
         self.wechat_config = wechat_config
-
-    def AdminMenu(self):
-        pass
-
+        self.sudo = "False" # 正常模式
+    def AdminMenu(self,Q):
+        if self.sudo == "True":
+            if Q == "ps":
+                return "todo"
+            elif Q == "verify_status":
+                if self.wechat_config.verify_status == "False":
+                    self.wechat_config.verify_status = "True"
+                    self.wechat_config.set_config(verify_status = "True")
+                    return "身份验证成功，开启自动登录"
+                else:
+                    return "身份验证已开启，无需重复验证"
+            elif Q == "list":
+                return "todo"
+            elif Q == "models":
+                return "todo"
+            elif Q == "pull":
+                return "todo"
+            elif Q == "exit":
+                self.sudo = "False"
+                return "todo"
+            elif Q == "help":
+                return "verify --确认身份(重启后对用户0免鉴权) \n ps --列出正在运行的模型 \n list  --列出已有模型  \n models --切换模型 \n pull -- 拉取模型 \n exit -- 退出管理员模式(输入sudo su再次进入)"
+        else:
+            return "你没有权限访问管理员菜单"
     def AdminTools(self):
         pass
     
     
 
 if __name__ == "__main__":
-    MyWechatConfig = WechatConfig() # 从config.json读取配置并设置第一个使用本系统的user为用户0，即管理员
+    with open("./config.json", "r") as f:
+        config = json.load(f)
+        WECHAT_TOKEN = config["WECHAT_TOKEN"]
+        APPID = config["APPID"]
+        AESKey = config["EncodingAESKey"]
+        AdminID = config["AdminID"]
+        mem0config = config["mem0config"]
+        model = config["model"]
+        verify_status = config["verify_status"]
+  
+    crypto = WeChatCrypto(WECHAT_TOKEN, AESKey, APPID)
+    MyWechatConfig = WechatConfig(crypto=crypto) # 从config.json读取配置并设置第一个使用本系统的user为用户0，即管理员
     # 参考格式如下
     # POST /wechat?signature=待定&timestamp=待定&nonce=待定&openid=待定&encrypt_type=aes&msg_signature=待定 HTTP/1.1
     ChatMemOllama = FastAPI()
