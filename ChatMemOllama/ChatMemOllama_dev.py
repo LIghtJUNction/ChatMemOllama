@@ -24,9 +24,9 @@ import datetime # 用于处理日期和时间
 import _thread # 用于多线程
 
 
+
 class WechatConfig():
-    def __init__(self,crypto):
-        self.crypto = crypto
+    def __init__(self):
         """
         初始化
         功能：
@@ -65,11 +65,11 @@ class WechatConfig():
             json.dump(config, f, indent=4)
             # 截断文件以防止新内容比旧内容短时出现残留
             f.truncate()
-
-
-        # 从目录 ./ChatMemOllama/Users 读取用户对象并保存在字典 self.users 中
+        self.crypto = WeChatCrypto(self.WECHAT_TOKEN, self.AESKey, self.APPID)
+        self.Queue = asyncio.Queue() # 用于传输数据
+        # 从目录 ./ChatMemOllama/Users 读取用户对象并保存在字典 self.users 中 TODO
         self.users = {}
-        # 读取用户对象文件夹 遍历后按照 openid:obj 成对保存在字典中 空值不报错
+        # 读取用户对象文件夹 遍历后按照 openid:obj 成对保存在字典中 空值不报错 TODO
         try:
             user_folder = "./Users"
             for userid in os.listdir(user_folder):
@@ -116,7 +116,6 @@ class WechatConfig():
             print("无效的微信签名请求")
             raise HTTPException(status_code=403, detail="Invalid signature")
         return msg_info
-
 
     async def get_msg_info(self, request):
         msg_info = {
@@ -221,8 +220,9 @@ class AIsystem():
         self.messages = {}  # 记录用户对话历史
         self.start_time = {}  # 记录对话开始时间
         self.current_time = {}  # 记录当前时间
-        self.n = {}  # 记录是否提前发送
-    def AI_kernel(self):
+        self.A = {}  # 记录聊天任务
+        self.n = {}  # 记录是否提前发送 4秒时间判断处使用
+    def AI_kernel(self): # AI核心 用于：拉取模型 列出模型 删模型 ... TODO 
         
         pass
 
@@ -235,7 +235,10 @@ class AIsystem():
         # 检查用户是否已有正在进行的对话
     
         elif openid in self.active_chats and not self.active_chats[openid].get("done", True):
-            return "请耐心等待"  # 如果有未完成的对话，拒绝新消息
+            if openid in self.A:
+                return self.A[openid]
+            else:
+                return "请耐心等待"  # 如果有未完成的对话，拒绝新消息
 
         self.messages[openid].append({"role": "user", "content": Q})
         # 设置用户状态为活跃并初始化对话片段
@@ -257,27 +260,32 @@ class AIsystem():
             # 如果对话结束，标记完成并返回完整内容
             if response["done"]:
                 self.active_chats[openid]["done"] = True
-                return self.response_content[openid]
+                self.wechat_config.Queue.put(openid, self.response_content[openid])
 
             # 超过4秒则提前发送
             if self.current_time[openid] - self.start_time[openid] > 4 and self.n[openid] == 1:
                 self.n[openid] -= 1
                 # 向用户发送已生成的片段
-                self.pipe(openid, self.response_content[openid])
+                self.wechat_config.Queue.put(openid, self.response_content[openid])
                 self.response_content[openid] = ""  # 清空已发送的内容以避免重复发送
 
 
         # 确保彻底清理用户状态
         self.active_chats[openid]["done"] = True
 
+    async def AI_call(self, openid, Q):
+        get_openid,A = await self.wechat_config.Queue.get()
+        if openid == get_openid:
+            return A
+        else:
+            self.A[openid] = A
 
-    def AI_tools(self):
+
+    def AI_tools(self): # TODO 
 
         pass
 
-    def pipe(self, openid, A):
-        # todo
-        pass
+
 
 
 # user实例 无法调用wechatconfig ，可以调用AIsystem
@@ -310,7 +318,7 @@ class user():
             A = "管理员你好！🤗 \n 已保存至config.json! \n 关于如何进入管理员模式，请查看config.json - 'su_key' 的值 ！并输入key进行鉴权！"
         else: # 非首次使用，正常逻辑
             print(f"用户 ： {Q} ")
-            A = await self.AI_system.AI_call_stream(self.openid,Q)
+            A = await self.AI_system.AI_call(self.openid,Q)
         return A
     
 
@@ -350,18 +358,8 @@ class Admin(user):
     
 
 if __name__ == "__main__":
-    with open("./config.json", "r") as f:
-        config = json.load(f)
-        WECHAT_TOKEN = config["WECHAT_TOKEN"]
-        APPID = config["APPID"]
-        AESKey = config["EncodingAESKey"]
-        AdminID = config["AdminID"]
-        mem0config = config["mem0config"]
-        model = config["model"]
-        verify_status = config["verify_status"]
-  
-    crypto = WeChatCrypto(WECHAT_TOKEN, AESKey, APPID)
-    MyWechatConfig = WechatConfig(crypto=crypto) # 从config.json读取配置并设置第一个使用本系统的user为用户0，即管理员
+
+    MyWechatConfig = WechatConfig() # 从config.json读取配置并设置第一个使用本系统的user为用户0，即管理员
     # 参考格式如下
     # POST /wechat?signature=待定&timestamp=待定&nonce=待定&openid=待定&encrypt_type=aes&msg_signature=待定 HTTP/1.1
     ChatMemOllama = FastAPI()
