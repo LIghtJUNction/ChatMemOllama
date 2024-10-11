@@ -217,7 +217,11 @@ class AIsystem():
         self.ollama_async_client = {} # 异步客户端
         self.mem0 = mem0.Memory.from_config(wechat_config.mem0config)
         self.active_chats = {}  # 记录正在处理的用户对话状态
+        self.response_content = {}  # 累计片段
         self.messages = {}  # 记录用户对话历史
+        self.start_time = {}  # 记录对话开始时间
+        self.current_time = {}  # 记录当前时间
+        self.n = {}  # 记录是否提前发送
     def AI_kernel(self):
         
         pass
@@ -237,32 +241,31 @@ class AIsystem():
         # 设置用户状态为活跃并初始化对话片段
         self.active_chats[openid] = {"done": False, "content": ""}
 
-        start_time = asyncio.get_event_loop().time()
-        response_content = ""  # 累计片段
-        last_send_time = start_time
+        self.start_time[openid] = asyncio.get_event_loop().time()
+        
+        self.n[openid] = 1  # 用于控制是否提前发送
 
         # 模拟异步对话生成
         async for response in await self.ollama_async_client[openid].chat(model=self.model, messages=self.messages[openid], stream=True):
             # 收集并保存生成的内容片段
             content = response["message"]["content"]
-            response_content += content
-            self.active_chats[openid]["content"] = response_content
+            self.response_content[openid] += content
+            self.active_chats[openid]["content"] = self.response_content[openid]
 
-            current_time = asyncio.get_event_loop().time()
+            self.current_time[openid] = asyncio.get_event_loop().time()
 
             # 如果对话结束，标记完成并返回完整内容
             if response["done"]:
                 self.active_chats[openid]["done"] = True
-                return response_content
+                return self.response_content[openid]
 
             # 超过4秒则提前发送
-            if current_time - start_time > 4:
+            if self.current_time[openid] - self.start_time[openid] > 4 and self.n[openid] == 1:
+                self.n[openid] -= 1
                 # 向用户发送已生成的片段
-                response_content = ""  # 清空已发送的内容以避免重复发送
-                last_send_time = current_time
+                self.pipe(openid, self.response_content[openid])
+                self.response_content[openid] = ""  # 清空已发送的内容以避免重复发送
 
-            # 每次生成新片段后等待片刻，以降低发送频率
-            await asyncio.sleep(0.1)
 
         # 确保彻底清理用户状态
         self.active_chats[openid]["done"] = True
@@ -270,6 +273,10 @@ class AIsystem():
 
     def AI_tools(self):
 
+        pass
+
+    def pipe(self, openid, A):
+        # todo
         pass
 
 
