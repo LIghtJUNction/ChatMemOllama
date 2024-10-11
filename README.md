@@ -43,6 +43,9 @@ ChatMemOllama 是一个个人微信公众号聊天机器人，结合了本地 AI
     export EncodingAESKey='your_encoding_aes_key'
     ```
 
+3.1.填写配置-config.json
+
+
 4. 运行应用：
     ```bash
     python justchat.py
