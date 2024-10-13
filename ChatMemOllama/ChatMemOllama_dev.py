@@ -66,7 +66,8 @@ class WechatConfig():
             # 截断文件以防止新内容比旧内容短时出现残留
             f.truncate()
         self.crypto = WeChatCrypto(self.WECHAT_TOKEN, self.AESKey, self.APPID)
-        self.Queue = asyncio.Queue() # 用于传输数据
+        self.model = "llama3.1" # 默认模型
+        self.system_prompt = "你是一个努力假扮人类的AI" # 系统提示词
         # 从目录 ./ChatMemOllama/Users 读取用户对象并保存在字典 self.users 中 TODO
         self.users = {}
         # 读取用户对象文件夹 遍历后按照 openid:obj 成对保存在字典中 空值不报错 TODO
@@ -208,90 +209,85 @@ class WechatConfig():
         return A
 
 # AIsystem可以访问Wecahtconfig
-class AIsystem():
-    def __init__(self,model,wechat_config : WechatConfig): 
+class AIsystem:
+    def __init__(self, model, wechat_config):
         self.model = model
         self.wechat_config = wechat_config
-        self.ollama_client = {} # 共用一个客户端可能导致回复窜流问题
-        self.ollama_async_client = {} # 异步客户端
+        self.ollama_async_client = ollama.AsyncClient()
         self.mem0 = mem0.Memory.from_config(wechat_config.mem0config)
-        self.active_chats = {}  # 记录正在处理的用户对话状态
-        self.response_content = {}  # 累计片段
-        self.messages = {}  # 记录用户对话历史
-        self.start_time = {}  # 记录对话开始时间
-        self.current_time = {}  # 记录当前时间
-        self.A = {}  # 记录聊天任务
-        self.n = {}  # 记录是否提前发送 4秒时间判断处使用
-    def AI_kernel(self): # AI核心 用于：拉取模型 列出模型 删模型 ... TODO 
-        
-        pass
 
 
-    async def AI_call_stream(self, openid, Q):
-        if openid not in self.active_chats:
-            self.ollama_async_client[openid] = ollama.AsyncClient()
-            self.messages[openid] = [{"role": "system", "content": "你是一个人"}]
-            self.active_chats[openid] = {"done": False, "content": ""}
-            self.response_content[openid] = ""
-        # 检查用户是否已有正在进行的对话
-    
-        elif openid in self.active_chats and not self.active_chats[openid].get("done", True):
-            if openid in self.A:
-                return self.A[openid]
-            else:
-                return "请耐心等待"  # 如果有未完成的对话，拒绝新消息
-
-        self.messages[openid].append({"role": "user", "content": Q})
-        # 设置用户状态为活跃并初始化对话片段
-        self.active_chats[openid] = {"done": False, "content": ""}
-
-        self.start_time[openid] = asyncio.get_event_loop().time()
-        
-        self.n[openid] = 1  # 用于控制是否提前发送
-
-        # 模拟异步对话生成
-        async for response in await self.ollama_async_client[openid].chat(model=self.model, messages=self.messages[openid], stream=True):
-            # 收集并保存生成的内容片段
-            content = response["message"]["content"]
-            self.response_content[openid] += content
-            self.active_chats[openid]["content"] = self.response_content[openid]
-
-            self.current_time[openid] = asyncio.get_event_loop().time()
-
-            # 如果对话结束，标记完成并返回完整内容
-            if response["done"]:
-                self.active_chats[openid]["done"] = True
-                self.A[openid] = self.response_content[openid]
-                await self.wechat_config.Queue.put(self.response_content[openid])
-                self.response_content[openid] = ""  # 清空已发送的内容以避免重复发送
-
-            # 超过4秒则提前发送
-            if self.current_time[openid] - self.start_time[openid] > 4 and self.n[openid] == 1:
-                self.n[openid] -= 1
-                # 向用户发送已生成的片段
-                self.A[openid] = self.response_content[openid]
-                await self.wechat_config.Queue.put(self.response_content[openid])
-                self.response_content[openid] = ""  # 清空已发送的内容以避免重复发送
-
-        # 确保彻底清理用户状态
+        self.active_chats = {} # 存储对话状态
+    async def init(self,openid):
+        Q = f"介绍一下你自己 尽量简短"
+        self.active_chats[openid] = {"done": False, "progress": 0 , "Q": Q , "responsed_content": "" , "A" : "" , "messages": [] , "tmp": ""}
+        self.active_chats[openid]["messages"].append({"role": "system", "content": self.wechat_config.system_prompt})
+        self.active_chats[openid]["messages"].append({"role": "user", "content": Q})
+        response = await self.ollama_async_client.chat(model=self.model,messages=self.active_chats[openid]["messages"],stream=False) 
+        self.active_chats[openid]["A"] = response["message"]["content"]
         self.active_chats[openid]["done"] = True
 
-    async def AI_call(self, openid, Q):
-        asyncio.create_task(self.AI_call_stream(openid, Q))
-        A = await self.wechat_config.Queue.get()
-        if self.A[openid] == self.A:
-            return A
-        elif openid in self.A:
-            return A
+    async def stream_respond(self, openid, Q):
+        if openid not in self.active_chats:
+            self.init(openid)# 初始化对话状态
+
         else:
-            self.A[openid] = A
+            self.active_chats[openid]["done"] = False
+            self.active_chats[openid] = {"ID":openid, "done": False, "progress": 0 , "Q": Q , "responsed_content": "" , "A" : "" , "messages": []}
+            self.active_chats[openid]["messages"].append({"role": "system", "content": self.wechat_config.system_prompt})
+            self.active_chats[openid]["messages"].append({"role": "user", "content": Q})
+            async for response in await self.ollama_async_client.chat(model=self.model,messages=self.active_chats[openid]["messages"],stream=True):
+                self.active_chats[openid]["responsed_content"] += response["message"]["content"]
+                self.active_chats[openid]["A"] += response["message"]["content"]
+                self.active_chats[openid]["progress"] += 10
 
+                if response["done"]:
+                    self.active_chats[openid]["done"] = True
+                    self.active_chats[openid]["progress"] = 100
+                    self.active_chats[openid]["messages"].append({"role": "assistant", "content": self.active_chats[openid]["A"]})
+                    break
 
-    def AI_tools(self): # TODO 
+    async def AI_call(self, openid, Q):
 
-        pass
+        """
+        监控 active_chats[openid]["done"] 状态 4 秒，如果状态在 4 秒内变为 True，
+        则执行 stream_respond，否则直接返回。
 
+        :param openid: 用户的 openid
+        :param Q: 待处理的内容
+        :param active_chats: 包含聊天状态的字典
+        :param stream_respond: 异步流式响应函数
+        :return: 返回聊天的响应内容或超时提示
+        """
+        if openid not in self.active_chats:
+            await self.init(openid)
+            self.active_chats[openid]["tmp"] = self.active_chats[openid]["A"]
+            self.active_chats[openid]["A"] = ""
+            return self.active_chats[openid]["tmp"] + "回答完毕1"
+        
+        asyncio.create_task(self.stream_respond(openid, Q))
 
+        # 将用户的 openid 和 提问先提交 给 stream_respond
+
+        try:
+            # 监控 4 秒内的状态变化
+            await asyncio.wait_for(self.cheak_status(openid), timeout=4.0)
+        except asyncio.TimeoutError:
+            # 如果超时（4 秒内状态未变为 True），直接返回提示
+            self.active_chats[openid]["tmp"] = self.active_chats[openid]["responsed_content"]
+            self.active_chats[openid]["responsed_content"] = "" # 清空响应内容
+            return f"{self.active_chats[openid]["tmp"]}... \n  进度：{self.active_chats[openid]['progress']}%"
+
+        # 如果 4 秒内状态变为 True，执行 stream_respond 并返回响应内容
+        self.active_chats[openid]["tmp"] = self.active_chats[openid]["A"]
+        self.active_chats[openid]["A"] = ""
+        
+        return self.active_chats[openid]["tmp"] + "回答完毕2"
+        
+
+    async def cheak_status(self,openid):
+        while self.active_chats[openid]["done"] == False:
+            await asyncio.sleep(0.2)
 
 # user实例 无法调用wechatconfig ，可以调用AIsystem
 # admin可以调用 wechatconfig
@@ -303,12 +299,6 @@ class user():
         self.age = None # 年龄属性 未设置
         self.cache = ""  # 缓存
         self.AI_system = AI_system
-        self.system_prompt = "你是一个幽默的AI"
-        self.messages = [{
-            "role": "system", 
-            "content": self.system_prompt
-        }
-        ]
 
     def get_user_info():
         pass    
@@ -316,7 +306,7 @@ class user():
     def set_user_info():
         pass
 
-    async def pipe(self,Q,init = False , IsAdmin = False):
+    async def pipe(self,Q,init = False , IsAdmin = False): # 管道 第二层
         if init and not IsAdmin: 
             A = "欢迎！ 🤗 你可以直接用自然语言问我提出你的要求，你还可以查看 我的历史文章：README.MD"
         elif init and IsAdmin :
