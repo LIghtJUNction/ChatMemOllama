@@ -46,7 +46,7 @@ class WechatConfig():
         - 如果读取用户对象时发生其他错误，打印错误信息并提示可能是第一次运行没有用户对象。
         """
         # 从目录 ./ChatMemOllama/.config 读取配置并赋值
-        with open("./config.json", "r+") as f:
+        with open("./ChatMemOllama/config.json", "r+") as f:
             config = json.load(f)
             self.WECHAT_TOKEN = config["WECHAT_TOKEN"]
             self.APPID = config["APPID"]
@@ -71,7 +71,7 @@ class WechatConfig():
         self.users = {}
         # 读取用户对象文件夹 遍历后按照 openid:obj 成对保存在字典中 空值不报错 TODO
         try:
-            user_folder = "./Users"
+            user_folder = "./ChatMemOllama/Users"
             for userid in os.listdir(user_folder):
                 user_file_path = os.path.join(user_folder, userid)
                 try:
@@ -89,7 +89,7 @@ class WechatConfig():
 
     def set_config(self, **kwargs):
         valid_keys = ["WECHAT_TOKEN", "APPID", "AESKey", "AdminID", "mem0config", "su_key", "model", "verify_status"]
-        with open("./config.json", "r") as f:
+        with open("./ChatMemOllama/config.json", "r") as f:
             config = json.load(f)
         
         for key, value in kwargs.items():
@@ -97,7 +97,7 @@ class WechatConfig():
                 setattr(self, key, value)
                 config[key] = value
         
-        with open("./config.json", "w") as f:
+        with open("./ChatMemOllama/config.json", "w") as f:
             json.dump(config, f, ensure_ascii=False, indent=4)
 
     def save_user(self, user):
@@ -106,7 +106,7 @@ class WechatConfig():
         print("保存用户对象 todo")
 
     def delete_user(self, openid):
-        os.remove(f"./Users/{openid}")
+        os.remove(f"./ChatMemOllama/Users/{openid}")
 
     async def check(self, request):  # 检查微信消息签名
         msg_info = await self.get_msg_info(request)
@@ -261,6 +261,7 @@ class AIsystem():
             if response["done"]:
                 self.active_chats[openid]["done"] = True
                 self.wechat_config.Queue.put(openid, self.response_content[openid])
+                self.response_content[openid] = ""  # 清空已发送的内容以避免重复发送
 
             # 超过4秒则提前发送
             if self.current_time[openid] - self.start_time[openid] > 4 and self.n[openid] == 1:
@@ -268,6 +269,7 @@ class AIsystem():
                 # 向用户发送已生成的片段
                 self.wechat_config.Queue.put(openid, self.response_content[openid])
                 self.response_content[openid] = ""  # 清空已发送的内容以避免重复发送
+
 
 
         # 确保彻底清理用户状态
