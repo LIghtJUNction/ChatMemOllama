@@ -232,6 +232,7 @@ class AIsystem():
             self.ollama_async_client[openid] = ollama.AsyncClient()
             self.messages[openid] = [{"role": "system", "content": "你是一个人"}]
             self.active_chats[openid] = {"done": False, "content": ""}
+            self.response_content[openid] = ""
         # 检查用户是否已有正在进行的对话
     
         elif openid in self.active_chats and not self.active_chats[openid].get("done", True):
@@ -260,24 +261,27 @@ class AIsystem():
             # 如果对话结束，标记完成并返回完整内容
             if response["done"]:
                 self.active_chats[openid]["done"] = True
-                self.wechat_config.Queue.put(openid, self.response_content[openid])
+                self.A[openid] = self.response_content[openid]
+                await self.wechat_config.Queue.put(self.response_content[openid])
                 self.response_content[openid] = ""  # 清空已发送的内容以避免重复发送
 
             # 超过4秒则提前发送
             if self.current_time[openid] - self.start_time[openid] > 4 and self.n[openid] == 1:
                 self.n[openid] -= 1
                 # 向用户发送已生成的片段
-                self.wechat_config.Queue.put(openid, self.response_content[openid])
+                self.A[openid] = self.response_content[openid]
+                await self.wechat_config.Queue.put(self.response_content[openid])
                 self.response_content[openid] = ""  # 清空已发送的内容以避免重复发送
-
-
 
         # 确保彻底清理用户状态
         self.active_chats[openid]["done"] = True
 
     async def AI_call(self, openid, Q):
-        get_openid,A = await self.wechat_config.Queue.get()
-        if openid == get_openid:
+        asyncio.create_task(self.AI_call_stream(openid, Q))
+        A = await self.wechat_config.Queue.get()
+        if self.A[openid] == self.A:
+            return A
+        elif openid in self.A:
             return A
         else:
             self.A[openid] = A
@@ -286,7 +290,6 @@ class AIsystem():
     def AI_tools(self): # TODO 
 
         pass
-
 
 
 
