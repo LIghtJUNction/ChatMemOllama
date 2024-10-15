@@ -167,11 +167,7 @@ class WechatConfig():
 
     # 管道 接受Q 输出A
     """
-    若 在4秒内没有回复，系统提前回复“正在处理中，请稍等” + 进度：x% 
-    若 用户在4秒内急不可耐连着发，系统回复“已收到您的消息，正在处理中，请稍等” + 进度：x% "虽然不立马处理，但会将其保存至历史记录中" 
-    若 用户发送"继续"，系统将准备好的对话直接发送给用户
-    若 用户发送"继续"，但是上一条消息未准备就绪，系统将回复"上一条消息未准备就绪，请稍等" + 进度：x%
-    若 用户发送"新对话"，系统将清空除了system之外的所有对话记录
+
 
     """ 
     async def pipe(self,Q,msg_info):
@@ -194,17 +190,17 @@ class WechatConfig():
             if Q == self.su_key :
                 self.users[openid].sudo = "True"
 
-                A = "管理员,你好!🤗     |\n *已进入管理员菜单🤖 \n *请输入 help 查看帮助😶‍🌫️"
+                A = "管理员,你好!🤗 -- 鉴权通过!  \n *已进入管理员菜单🤖 \n *请输入 help 查看帮助😶‍🌫️"
             elif Q == "sudo su":
                 if openid == self.AdminID:
                     self.users[openid].sudo = "True"
-                    A = "管理员,你好!🤗     |\n *已进入管理员菜单🤖 \n *请输入 help 查看帮助😶‍🌫️"
+                    A = "管理员,你好!🤗   \n *已进入管理员菜单🤖 \n *请输入 help 查看帮助😶‍🌫️"
                 else:
                     A = "你没有权限进入管理员模式/（请检查你是否为用户零）"
             elif self.users[openid].sudo == "True":
-                A = self.users[openid].AdminMenu(Q)
+                A = self.users[openid].AdminMenu(Q) # 管理员控制菜单模式
             else:
-                A = await self.users[openid].pipe(Q) # 传到用户处理
+                A = await self.users[openid].pipe(Q) # 管理员AI对话模式
 
         return A
 
@@ -225,27 +221,21 @@ class AIsystem:
         self.active_chats[openid]["messages"].append({"role": "user", "content": Q})
         response = await self.ollama_async_client.chat(model=self.model,messages=self.active_chats[openid]["messages"],stream=False) 
         self.active_chats[openid]["A"] = response["message"]["content"]
-        self.active_chats[openid]["done"] = True
+        self.active_chats[openid]["done"] = "True"
 
     async def stream_respond(self, openid, Q):
-        if openid not in self.active_chats:
-            self.init(openid)# 初始化对话状态
 
-        else:
-            self.active_chats[openid]["done"] = False
-            self.active_chats[openid] = {"ID":openid, "done": False, "progress": 0 , "Q": Q , "responsed_content": "" , "A" : "" , "messages": []}
-            self.active_chats[openid]["messages"].append({"role": "system", "content": self.wechat_config.system_prompt})
-            self.active_chats[openid]["messages"].append({"role": "user", "content": Q})
-            async for response in await self.ollama_async_client.chat(model=self.model,messages=self.active_chats[openid]["messages"],stream=True):
-                self.active_chats[openid]["responsed_content"] += response["message"]["content"]
-                self.active_chats[openid]["A"] += response["message"]["content"]
-                self.active_chats[openid]["progress"] += 10
+        self.active_chats[openid] = {"ID":openid, "done": "False", "progress": 0 , "Q": Q , "responsed_content": "" , "A" : "" , "messages": []}
+        self.active_chats[openid]["messages"].append({"role": "system", "content": self.wechat_config.system_prompt}) # TODO
+        self.active_chats[openid]["messages"].append({"role": "user", "content": Q})    # TODO
 
-                if response["done"]:
-                    self.active_chats[openid]["done"] = True
-                    self.active_chats[openid]["progress"] = 100
-                    self.active_chats[openid]["messages"].append({"role": "assistant", "content": self.active_chats[openid]["A"]})
-                    break
+        async for response in await self.ollama_async_client.chat(model=self.model,messages=self.active_chats[openid]["messages"],stream=True):
+            self.active_chats[openid]["responsed_content"] += response["message"]["content"]
+            self.active_chats[openid]["A"] += response["message"]["content"]
+            print(response["message"]["content"], end='', flush=True)
+
+
+        self.active_chats[openid]["done"] = "True" # 更新状态
 
     async def AI_call(self, openid, Q):
 
@@ -259,36 +249,44 @@ class AIsystem:
         :param stream_respond: 异步流式响应函数
         :return: 返回聊天的响应内容或超时提示
         """
-        if openid not in self.active_chats:
+        if openid not in self.active_chats:  # 初始化检验
             await self.init(openid)
             self.active_chats[openid]["tmp"] = self.active_chats[openid]["A"]
             self.active_chats[openid]["A"] = ""
+            self.active_chats[openid]["responsed_content"]=""
             return self.active_chats[openid]["tmp"] + "回答完毕1"
+
+        # 判断self.active_chats[openid]["responsed_content"]是否为空值 如果非空则执行if判断 --- 场景：上一轮对话被截断输出 如果没这个判断，直接开启新对话了
+        if self.active_chats[openid]["responsed_content"] and self.active_chats[openid]["done"] == "True" :
+            self.active_chats[openid]["tmp"] = self.active_chats[openid]["responsed_content"]
+            self.active_chats[openid]["responsed_content"] = ""
+            return self.active_chats[openid]["tmp"] + "回答完毕3"
+
+
+        await self.stream_respond(openid,Q)
+
         
-        asyncio.create_task(self.stream_respond(openid, Q))
+        if self.active_chats[openid]["done"] == "True" :
 
-        # 将用户的 openid 和 提问先提交 给 stream_respond
-
-        try:
-            # 监控 4 秒内的状态变化
-            await asyncio.wait_for(self.cheak_status(openid), timeout=4.0)
-        except asyncio.TimeoutError:
-            # 如果超时（4 秒内状态未变为 True），直接返回提示
+            # 新建一个新线程并立即运行 TODO
+            # threading.Thread(target=asyncio.run, args=(self.stream_respond(openid, Q),)).start()
+            await self.stream_respond(openid,Q) 
+            # 如果 5 秒内状态变为 True，直接返回响应内容
+            self.active_chats[openid]["tmp"] = self.active_chats[openid]["A"]
+            self.active_chats[openid]["A"] = ""
+            self.active_chats[openid]["responsed_content"]=""
+            return self.active_chats[openid]["tmp"] + "回答完毕2"
+        
+        elif self.active_chats[openid]["done"] == "False" : # 超过时间限制直接返回值 一般是微信重发请求或者用户提前问了
+            # 将用户的 openid 和 提问先提交 给 stream_respond
             self.active_chats[openid]["tmp"] = self.active_chats[openid]["responsed_content"]
             self.active_chats[openid]["responsed_content"] = "" # 清空响应内容
-            return f"{self.active_chats[openid]["tmp"]}... \n  进度：{self.active_chats[openid]['progress']}%"
+            print("超时提前返回截断值")
+            return f"{self.active_chats[openid]["tmp"]}...... \n (AI正在继续生成回复中...  继续/取消 )"
 
-        # 如果 4 秒内状态变为 True，执行 stream_respond 并返回响应内容
-        self.active_chats[openid]["tmp"] = self.active_chats[openid]["A"]
-        self.active_chats[openid]["A"] = ""
-        
-        return self.active_chats[openid]["tmp"] + "回答完毕2"
-        
 
-    async def cheak_status(self,openid):
-        while self.active_chats[openid]["done"] == False:
-            await asyncio.sleep(0.2)
 
+            
 # user实例 无法调用wechatconfig ，可以调用AIsystem
 # admin可以调用 wechatconfig
 class user():
@@ -353,7 +351,26 @@ class Admin(user):
     
 
 if __name__ == "__main__":
+    # 检测qdrant服务是否在端口6333开启
+    try:
+        response = requests.get("http://localhost:6333")
+        if response.status_code == 200:
+            print("Qdrant 服务正在运行")
+        else:
+            print("Qdrant 服务未在端口 6333 运行! \n qdrant是mem0需要使用的向量数据库 \n 请到https://github.com/LIghtJUNction/ChatMemOllama 查看教程 ")
+    except requests.ConnectionError:
+       raise HTTPException(status_code=500, detail="无法连接到 Qdrant 服务")
 
+    # 检测ollama是否在端口11434(默认)运行
+    try:
+        response = requests.get("http://localhost:11434")
+        if response.status_code == 200:
+            print("Ollama 服务正在运行 🤖 ")
+        else:
+            print("Ollama 服务未在端口 11434(默认端口) 运行! ")
+    except requests.ConnectionError:
+        
+        raise HTTPException(status_code=500, detail="无法连接到 Ollama 服务")
     MyWechatConfig = WechatConfig() # 从config.json读取配置并设置第一个使用本系统的user为用户0，即管理员
     # 参考格式如下
     # POST /wechat?signature=待定&timestamp=待定&nonce=待定&openid=待定&encrypt_type=aes&msg_signature=待定 HTTP/1.1
