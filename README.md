@@ -15,11 +15,12 @@ ChatMemOllama 是一个个人微信公众号聊天机器人，结合了本地 AI
 - **功能开发情况**：
 允许或禁止其他用户调用 AI。TODO📌
 管理员菜单。           待完善📌
-程序时间管理。         debugging
+程序时间管理。         待完善📌
 多用户处理逻辑。       debugging
 关键词回复。           ✅
 基本对话。             ✅
-tool calling。最终目标 等待前置任务测试完成
+tool calling。      debugging
+
 
 
 ## 安装与使用
