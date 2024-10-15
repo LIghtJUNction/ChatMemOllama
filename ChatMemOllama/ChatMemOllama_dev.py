@@ -263,10 +263,8 @@ class AIsystem:
             return self.active_chats[openid]["tmp"] + "回答完毕3"
 
 
-        await self.stream_respond(openid,Q)
-
-        
         if self.active_chats[openid]["done"] == "True" :
+            await self.stream_respond(openid,Q)
 
             # 新建一个新线程并立即运行 TODO
             # threading.Thread(target=asyncio.run, args=(self.stream_respond(openid, Q),)).start()
