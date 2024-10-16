@@ -5,6 +5,7 @@
     "AdminID": "",
     "model": "llama3.1:latest",
     "embedding_model": "nomic-embed-text:latest",
+    "Tavilykey" : "xxxxx",
     "su_key":"",
 
     "mem0config" :  
