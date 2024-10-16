@@ -210,7 +210,7 @@ class AIsystem:
         self.wechat_config = wechat_config
         self.ollama_async_client = ollama.AsyncClient()
         self.mem0 = mem0.Memory.from_config(wechat_config.mem0config)
-        self.system_prompt = " 你的身份: 智能助手 /n 你的能力 : 在线搜索 以及 获取当前时间 /n 你的说话方式: 带有微信表情符号 例如: [骷髅][捂脸][破涕为笑][憨笑][微笑][色][便便][旺柴][得意][发呆][流泪][微笑][害羞][色][闭嘴][睡][大哭][尴尬][调皮][呲牙][呲牙][惊讶][难过][抓狂][囧][吐][偷笑][愉快][白眼][傲慢][困][惊恐][憨笑][悠闲][咒骂][疑问][嘘][晕][衰][敲打][再见][抠鼻][擦汗][鼓掌][坏笑][右哼哼][鄙视][委屈][快哭了][亲亲][可怜][笑脸][嘿哈][无语][奸笑][生病][加油][机智][打脸][社会社会][好的][爱心][嘴唇][心碎][拥抱][强][合十][拳头][勾引][菜刀][凋谢][咖啡][炸弹][蛋糕][便便][月亮][太阳][庆祝][红包][發][福][烟花][爆竹][猪头][转圈][发抖][发抖] 例如: 你好[微笑] /n 你的对话环境:微信公众号" # 默认系统提示词
+        self.system_prompt = "  你的身份: 智能助手 /n 你的能力 : 在线搜索 以及 获取当前时间 /n 你的说话方式: 带有微信表情符号 例如: [骷髅][捂脸][破涕为笑][憨笑][微笑][色][便便][旺柴][得意][发呆][流泪][微笑][害羞][色][闭嘴][睡][大哭][尴尬][调皮][呲牙][呲牙][惊讶][难过][抓狂][囧][吐][偷笑][愉快][白眼][傲慢][困][惊恐][憨笑][悠闲][咒骂][疑问][嘘][晕][衰][敲打][再见][抠鼻][擦汗][鼓掌][坏笑][右哼哼][鄙视][委屈][快哭了][亲亲][可怜][笑脸][嘿哈][无语][奸笑][生病][加油][机智][打脸][社会社会][好的][爱心][嘴唇][心碎][拥抱][强][合十][拳头][勾引][菜刀][凋谢][咖啡][炸弹][蛋糕][便便][月亮][太阳][庆祝][红包][發][福][烟花][爆竹][猪头][转圈][发抖][发抖] 例如: 你好[微笑] /n 你的对话环境:微信公众号 " # 默认系统提示词
         self.active_chats = {} # 存储对话状态
 
 
@@ -221,7 +221,7 @@ class AIsystem:
             "type": "function",
             "function": {
                 "name": "search_online",
-                "description": "在线搜索，请先翻译为英文，比较耗时,尽量不使用",
+                "description": "在线搜索，请先翻译为英文再搜索",
                 "parameters": {
                 "type": "object",
                 "properties": {
@@ -243,81 +243,88 @@ class AIsystem:
                 "required": [],
                 },
             },
-            },
+            }
         ]
         
     async def init(self,openid,Q):
         """
-        初始化对话
+        初始化AI 对话 -- 引导用户并设置用户的属性
         """
-        self.active_chats[openid] = {"ID":openid, "done": "False" , "progress": 0 , "responsed_content": "" , "A" : "" , "tmp": ""}
+        self.active_chats[openid] = {
+            "A": "",
+            "responsed_content": "",
+            "done": "False",
+            "tmp": ""
+        }
         self.wechat_config.users[openid].init_messages()
-        await self._stream_respond(openid,Q)
-        self.active_chats[openid]["tmp"] = self.active_chats[openid]["A"]
-        self.active_chats[openid]["A"] = ""
-        self.active_chats[openid]["responsed_content"] = ""
         self.active_chats[openid]["done"] = "True"
-        return self.active_chats[openid]["tmp"]
- 
+        return "欢迎！ 我需要先了解一下你 \n 你的名字是什么？(我应该如何称呼你?) \n 你的年龄呢？(我应该知道你的年龄吗?) \n 你的性别呢？(我应该知道你的性别吗?) \n 你也可以不回答这些问题，直接问我你的问题。 \n 你可以随时输入 exit 退出AI对话。(输入AI重新开启) \n 输入help 或者-h 查看帮助"
+    
     
     async def AI_call(self, openid, Q):
         """
         AI调用函数，返回AI的回复。
         """
-        self.wechat_config.users[openid].save_message("user", Q)
-        print(f"用户消息保存: {Q}")
+        print(f"AI_call invoked with openid: {openid}, Q: {Q}")
         
         if openid not in self.active_chats:
-            print(f"初始化对话: openid={openid}")
+            print(f"Initializing chat for openid: {openid}")
             return await self.init(openid, Q)
         else:
-            if self.active_chats[openid]["done"] == "True":
-                print(f"对话已完成: openid={openid}")
+            chat_status = self.active_chats[openid]
+            print(f"Chat status for openid {openid}: {chat_status}")
+            
+            if chat_status["done"] == "False" or (chat_status["done"] == "True" and chat_status["responsed_content"]):
+                print(f"Returning temporary response for openid: {openid}")
+                return self._tmp_(openid, "responsed_content")
+            elif chat_status["done"] == "True" and not chat_status["responsed_content"]:
+                print(f"Saving user message for openid: {openid}, Q: {Q}")
+                self.wechat_config.users[openid].save_message("user", Q)
                 
-                if self.active_chats[openid]["responsed_content"] == "":  # 未初始化
-                    print(f"未初始化响应内容: openid={openid}")
-                    if self._tool_calling(openid) == "":
-                        print(f"工具调用返回空: openid={openid}")
-                        self.active_chats[openid]["tmp"] = self.active_chats[openid]["A"]
-                        print(f"临时响应内容: {self.active_chats[openid]['tmp']}")
-                        self.active_chats[openid]["A"] = ""
-                        self.active_chats[openid]["responsed_content"] = ""
-                        return self.active_chats[openid]["tmp"]
+                if "-s" in Q or "-S" in Q:
+                    print(f"Tool search requested for openid: {openid}")
+                    tools = [self.tools[0]]
+                    tool_calls = await self._tool_calling(openid, tools)
+                    print(f"Tool calls for openid {openid}: {tool_calls}")
+                    
+                    if tool_calls:
+                        results = await self._format_results(openid, await self._execute_tool_calls(openid, tool_calls))
+                        print(f"Tool results for openid {openid}: {results}")
+                        self.wechat_config.users[openid].save_message("tool", await self._format_results(openid, await self._execute_tool_calls(openid, tool_calls)))
+                        await self._stream_respond(openid, Q)
+                        return self._tmp_(openid, "responsed_content")
                     else:
-                        print(f"工具调用返回非空: openid={openid}")
-                        tool_calls = await self._tool_calling(openid)
-                        print(f"工具调用结果: {tool_calls}")
-                        results = await self._execute_tool_calls(openid, tool_calls)
-                        print(f"工具执行结果: {results}")
-                        formatted_results = await self._format_results(openid, results)
-                        print(f"格式化结果: {formatted_results}")
-                        self.wechat_config.users[openid].save_message("tool", formatted_results)
-                        await self._stream_respond(openid,Q)
-                        self.active_chats[openid]["tmp"] = self.active_chats[openid]["A"]
-                        self.active_chats[openid]["A"] = ""
-                        self.active_chats[openid]["responsed_content"] = ""
-                        return self.active_chats[openid]["tmp"]
+                        print(f"Returning temporary response A for openid: {openid}")
+                        return self._tmp_(openid, "A")
+                else:
+                    print(f"不使用在线搜索功能,用户: {openid}")
+                    tools = [self.tools[1]]
+                    tool_calls = await self._tool_calling(openid, tools)
+                    print(f"Tool calls for openid {openid}: {tool_calls}")
+                    
+                    if tool_calls:
+                        results = await self._format_results(openid, await self._execute_tool_calls(openid, tool_calls))
+                        print(f"Tool results for openid {openid}: {results}")
+                        self.wechat_config.users[openid].save_message("tool", await self._format_results(openid, await self._execute_tool_calls(openid, tool_calls)))
+                        await self._stream_respond(openid, Q)
+                        return self._tmp_(openid, "responsed_content")
+                    else:
+                        print(f"Returning temporary response A for openid: {openid}")
+                        return self._tmp_(openid, "A")
+            else:
+                return "好好检查下代码吧! "                   
 
-
-                elif self.active_chats[openid]["responsed_content"] != "":
-                    print(f"响应内容非空: {self.active_chats[openid]['responsed_content']}")
-                    self.active_chats[openid]["tmp"] = self.active_chats[openid]["responsed_content"]
-                    self.active_chats[openid]["responsed_content"] = ""
-                    return self.active_chats[openid]["tmp"]
-                
-            elif self.active_chats[openid]["done"] == "False":
-
-                print(f"对话未完成: openid={openid}")
-                await asyncio.sleep(1)
-                self.active_chats[openid]["tmp"] = self.active_chats[openid]["responsed_content"]
-                print(f"临时响应内容: {self.active_chats[openid]['tmp']}")
-                self.active_chats[openid]["responsed_content"] = ""
-
-                return self.active_chats[openid]["responsed_content"]  # 返回上一次的结果
+            
 
     # 以下是AI工具相关的函数
 
-    async def _tool_calling(self,openid):
+    def _tmp_(self,openid , _ ):
+        self.active_chats[openid]["tmp"] = self.active_chats[openid][_]
+        self.active_chats[openid][_] = ""
+        return self.active_chats[openid]["tmp"]
+
+
+    async def _tool_calling(self,openid,tools):
         """
         调用工具函数，返回工具函数的结果。
         """
@@ -327,7 +334,7 @@ class AIsystem:
         response = await self.ollama_async_client.chat(
             model=self.model,
             messages=self.wechat_config.users[openid].messages,
-            tools=self.tools
+            tools=tools
         )
         print("应该调用的工具?完整响应：",response)
 
@@ -336,6 +343,7 @@ class AIsystem:
             self.active_chats[openid]["done"] = "True"
             return tool_calls
         else:
+            print("不调用")
             self.active_chats[openid]["A"] = response['message']['content']
             self.active_chats[openid]["done"] = "True"
             return "" # 供判断使用
@@ -345,16 +353,13 @@ class AIsystem:
         异步流式响应函数，用于处理用户的提问并返回响应内容。
         处理流程： 用户提问 -> 保存用户提问 -> 调用AI选择工具并提取参数 -> 执行工具 并将结果添加至messages ->  调用 ollama 生成回复 -> 保存回复 -> 返回回复
         """
+
         self.active_chats[openid]["done"] = "False"
-        self.wechat_config.users[openid].save_message("user",Q)
-        if self.active_chats[openid]["responsed_content"] != "" or self.active_chats[openid]["A"] != "" :
-            return "未初始化! 拒绝响应!"
         async for response in await self.ollama_async_client.chat(model=self.model,messages=self.wechat_config.users[openid].messages,stream=True):
             self.active_chats[openid]["responsed_content"] += response["message"]["content"]
             self.active_chats[openid]["A"] += response["message"]["content"]
             print(response["message"]["content"], end='', flush=True)
         self.active_chats[openid]["done"] = "True"
-
 
     # 可以使用@staticmethod装饰器将方法标记为静态方法，静态方法不会接收隐式的第一个参数 self
     async def _search_online(self,openid, query) -> str:  # 在线搜索AI-工具 统一使用下标_开头 好区分  #耗时
@@ -363,17 +368,17 @@ class AIsystem:
             query = "latest " + query
         try:
             print("ai使用了本函数搜索：", query)
-            search_results = self.search_client.search(query)
+            search_results = self.search_client.search(query,max_results=1)
             print(f"搜索结果：{search_results}" )
             return json.dumps(search_results["results"])
         except Exception as e:
-            return f"搜索失败，错误原因: {str(e)} -- 可能是免费搜索次数用完了"
-        
+            return f"搜索失败，错误原因: {str(e)} -- 可能是免费搜索次数用完了/搜索字数不够"
+
     # 默认调用工具    
     async def _get_time(self,openid) -> str: # 获取时间 默认工具 不耗时  
         print("AI使用了本函数获取时间---用户ID：",openid)
         result = {
-            "当前时间": datetime.datetime.now().isoformat()
+            "timestamp": datetime.datetime.now().isoformat()
         }
         return json.dumps(result, ensure_ascii=False, indent=4)
         
@@ -407,9 +412,6 @@ class AIsystem:
                 formatted_results.append(f"结果: {result['result']}")
         return "\n".join(formatted_results)
 
-
-
-
 class user():
     def __init__(self, openid , AI_system : AIsystem ):
         self.openid = openid
@@ -421,7 +423,7 @@ class user():
         self.K = 20 # 用于控制消息记录长度
         self.messages = [] # 消息上下文记录
         self.system_prompt = self.AI_system.system_prompt # 默认系统提示词
-        
+        self.menu = False # 菜单状态
 
     def get_user_info(self):
         pass    
@@ -447,13 +449,31 @@ class user():
             A = "欢迎！ 🤗 你可以直接用自然语言问我提出你的要求，你还可以查看 我的历史文章：README.MD"
         elif init and IsAdmin :
             A = "管理员你好！🤗 \n 已保存至config.json! \n 关于如何进入管理员模式，请查看config.json - 'su_key' 的值 ！并输入key进行鉴权！"
+
+        elif Q == "exit":
+            self.menu = True
+            A = "退出AI对话"
+
+
         else: # 非首次使用，正常逻辑
             print(f"用户 ： {Q} ")
             A = await self.AI_system.AI_call(self.openid,Q)
         return A
     
-
-
+    def menu(self,Q):
+        if Q == "help" or Q == "-h":
+            return "help -- 查看帮助 \n sudo su -- 进入管理员模式(仅限管理员) \n AI -- 重新开启AI对话 \n exit -- 退出AI对话"
+        elif Q == "AI":
+            self.menu = False
+            return "AI对话已重新开启"
+        elif Q == "sudo su":
+            return "你没有权限进入管理员模式"
+        elif Q == "1":
+            return "todo"
+        elif Q == "2":
+            return "todo"
+        elif Q == "3":
+            return "todo"    
 class Admin(user):
     def __init__(self, openid ,AI_system, wechat_config :WechatConfig ):
         super().__init__(openid,AI_system)  # 继承user类

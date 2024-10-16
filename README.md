@@ -11,16 +11,22 @@ ChatMemOllama 是一个个人微信公众号聊天机器人，结合了本地 AI
 - **记忆管理**：通过 mem0 管理用户的聊天记忆，提供更连贯的对话体验。
 - **多用户支持**：支持多个用户同时进行对话（测试版存在逻辑问题）。
 - **快速响应**：尽量在 5 秒内回复用户，超时情况下会提示用户等待。
-
 - **功能开发情况**：
-允许或禁止其他用户调用 AI。TODO📌
-管理员菜单。           待完善📌
-程序时间管理。         待完善📌
-多用户处理逻辑。       debugging
-关键词回复。           ✅
-基本对话。             ✅
-tool calling。      debugging
+  允许或禁止其他用户调用 AI。TODO📌
+  管理员菜单。           待完善📌
+  程序时间管理。         待完善📌
+  多用户处理逻辑。       debugging
+  关键词回复。           ✅
+  基本对话。             ✅
+  tool calling。      debugging
 
+# 效果展示
+
+![1729082774724](images/README/1729082774724.png)
+
+![1729082801293](images/README/1729082801293.png)
+
+> 持续开发新功能中....
 
 
 ## 安装与使用
@@ -36,15 +42,17 @@ tool calling。      debugging
 ### 安装步骤
 
 1. 克隆仓库：
-    ```bash
-    git clone https://github.com/LIghtJUNction/ChatMemOllama.git
-    cd ChatMemOllama
-    ```
 
+   ```bash
+   git clone https://github.com/LIghtJUNction/ChatMemOllama.git
+   cd ChatMemOllama
+   ```
 2. 安装依赖：
-    ```bash
-    pip install -r requirements.txt
-    ```
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
 2.1 qdrant安装与使用
 1.docker安装
 2.wsl安装
@@ -52,20 +60,19 @@ tool calling。      debugging
 请检查ollama以及qdrant是否在后台运行
 
 3. 配置环境变量：
-    ```bash
-    export WECHAT_TOKEN='your_wechat_token'
-    export APPID='your_appid'
-    export APPSECRET='your_appsecret'
-    export EncodingAESKey='your_encoding_aes_key'
-    ```
+   ```bash
+   export WECHAT_TOKEN='your_wechat_token'
+   export APPID='your_appid'
+   export APPSECRET='your_appsecret'
+   export EncodingAESKey='your_encoding_aes_key'
+   ```
 
- 3.1.填写配置-config.json
-
+3.1.填写配置-config.json
 
 4. 运行应用：
-    ```bash
-    python justchat.py
-    ```
+   ```bash
+   python justchat.py
+   ```
 
 ## 贡献指南
 
@@ -82,7 +89,6 @@ tool calling。      debugging
 ## 联系方式
 
 如有任何问题或建议，请通过 email 联系我：lightjunction.me@gmail.com
-
 
 ---
 
@@ -137,8 +143,6 @@ tool calling。      debugging
 
 经过鉴权验证后程序自动记录你的openid并设置为管理员，无需后续操作。
 
-
-
 ### 感谢
 
 最后，感谢大家对这个项目的喜爱！✨ 这个项目的星星数量出乎我的意料，比我前面几个 repo 的星星多得多。这对我是一种莫大的鼓励，谢谢！
@@ -146,4 +150,3 @@ tool calling。      debugging
 2024.10.9
 
 ---
-
