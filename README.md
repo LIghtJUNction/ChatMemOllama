@@ -6,14 +6,14 @@ ChatMemOllama 是一个基于 FastAPI 和 WeChat 的聊天机器人项目，支�
 
 ```
 chatmemollama/
-    
+  
 
 ChatMemOllama_dev.py
 
 
     config.json
     LICENSE
-    
+  
 
 README.md
 
@@ -25,13 +25,13 @@ images/
     README/
 LICENSE
 Old_version/
-    
+  
 
 ChatMemOllama.py
 
 
     JustChat.py
-    
+  
 
 readme.md
 
@@ -127,6 +127,7 @@ uvicorn ChatMemOllama_dev:ChatMemOllama --host 0.0.0.0 --port 8000
 ## 许可证
 
 本项目使用 [MIT 许可证](LICENSE)。
+
 ```
 
 请根据您的实际需求和项目配置进行调整。
@@ -147,38 +148,29 @@ ChatMemOllama 是一个基于 FastAPI 和 WeChat 的聊天机器人项目，支�
 ## 项目结构
 
 ```
+
 chatmemollama/
-    ChatMemOllama_dev.py
-    config.json
-    LICENSE
-    
+ChatMemOllama_dev.py
+config.json
+LICENSE
 
 README.md
 
-
-    Users/
+Users/
 docs/
-    zh_cn.md
+zh_cn.md
 images/
-    README/
+README/
 LICENSE
 Old_version/
-    ChatMemOllama.py
-    JustChat.py
-    
+ChatMemOllama.py
+JustChat.py
 
 readme.md
 
-
-
-
 README.md
 
-
-
-
 requirements.txt
-
 
 ```
 
@@ -195,7 +187,6 @@ beautifulsoup4
 mem0
 tavily
 ```
-
 您可以使用以下命令安装依赖：
 
 ```sh
@@ -205,7 +196,6 @@ requirements.txt
 
 
 ```
-
 ## 配置文件
 
 请在 `chatmemollama/config.json` 中配置以下内容：
@@ -222,7 +212,6 @@ requirements.txt
     "Tavilykey": "your_tavily_key"
 }
 ```
-
 ## 运行项目
 
 您可以使用以下命令启动项目：
@@ -230,7 +219,6 @@ requirements.txt
 ```sh
 uvicorn ChatMemOllama_dev:ChatMemOllama --host 0.0.0.0 --port 8000
 ```
-
 ## 功能说明
 
 ### 用户命令
@@ -256,7 +244,4 @@ uvicorn ChatMemOllama_dev:ChatMemOllama --host 0.0.0.0 --port 8000
 
 ## 许可证
 
-本项目使用 [MIT 许可证](LICENSE)。
-```
-
-请根据您的实际需求和项目配置进行调整。
+本项目使用 [Apache2.0 许可证](LICENSE)
