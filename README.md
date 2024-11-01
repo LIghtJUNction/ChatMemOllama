@@ -12,6 +12,8 @@ ChatMemOllama 是一个基于 FastAPI 和 WeChat 的聊天机器人项目，支�
 885986098
 
 
+# 效果展示
+![效果一](images/1729082801293.png)
 
 
 ## 项目结构
