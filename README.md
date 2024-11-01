@@ -111,8 +111,8 @@ requirements.txt
 
 您可以使用以下命令启动项目：
 
-```sh
-uvicorn ChatMemOllama_dev:ChatMemOllama --host 0.0.0.0 --port 8000
+```py
+chatmemollama_dev.py
 ```
 
 ## 功能说明
