@@ -22,18 +22,15 @@ AI就学会了使用微信表情包和我进行对话
 ## 项目结构
 
 ```
+doc/ 
 chatmemollama/
   
 
 ChatMemOllama_dev.py
-
-
     config.json
     LICENSE
-  
 
 README.md
-
 
     Users/
 docs/
@@ -140,6 +137,38 @@ chatmemollama_dev.py
 ## 贡献
 
 欢迎提交问题和贡献代码！请确保您的代码符合项目的编码规范。
+
+# 更新计划
+
+重新打造项目核心代码 
+将允许使用非本地AI
+
+将各部分
+- 微信交互类 
+- AI调用类
+- 用户管理类
+这主要的类分开写到不同文件
+
+加强逻辑处理部分
+
+将项目模块化以更好的支持新功能
+
+动态拓展函数调用
+
+优化微信服务器5秒超时逻辑处理
+
+-项目文件夹ChatMemOllama
+
+ - AIsystem.py
+ - WechatConfig.py
+ - UserInfo.py
+ - Main.py
+ - Guide.py
+
+## 后续考虑制作GUI管理界面
+
+
+## 早期开发阶段 任何部分都可能会变！
 
 
 ## 许可证
