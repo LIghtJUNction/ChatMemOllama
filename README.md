@@ -1,6 +1,9 @@
 # ChatMemOllama
 
 ChatMemOllama 是一个基于 FastAPI 和 WeChat 的聊天机器人项目，支持 AI 对话和管理员模式。
+支持连接到ollama  -本地AI 以及通过API key - base URL连接到各种模型
+支持函数调用 - 目前能函数调用在线搜索以及获取时间两个示例函数
+/tip llama3.1：8b对中文参数的函数调用支持不好，但是英文参数正常
 前提：申请一个免费的微信公众号-内网映射HTTP/S-电脑有python环境
 免费教程：885986098 进群咨询/合作开发
 
