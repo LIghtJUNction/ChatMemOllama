@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import PlainTextResponse
 from wechatpy import parse_message, create_reply
-from wechatpy.utils import check_signature
+from wechat:y.utils import check_signature
 from wechatpy.crypto import WeChatCrypto
 from wechatpy.exceptions import InvalidSignatureException, InvalidAppIdException
 import asyncio

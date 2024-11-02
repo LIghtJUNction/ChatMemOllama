@@ -1,0 +1,33 @@
+{
+    "WechatToken": "xxxxxx",
+    "APPID": "xxxxx",
+    "EncodingAESKey": "xxxxx",
+    "AdminID": "",
+    "Tavilykey" : "xxxxxxxxxxxxxxxxx",
+    "SuKey":"",
+    "LlmMode": "local",
+
+
+
+    "llm": {
+        "local": "ollama",
+        "LocalConfig": {
+            "model": "llama3.1:latest",
+            "base_url": "http://localhost:11434"
+        },
+         "online": "openai",
+         "OnlineConfig": {
+             "Model": "gpt-4o",
+             "APIKey": "xxxxxxxxxxxxxx",
+             "BaseUrl": "xxxxxxxxxxxxxxxxx"
+         }
+      },
+    "embedder": {
+        "provider": "ollama",
+        "config": {
+            "Model": "nomic-embed-text:latest",
+            "BaseUrl": "http://localhost:11434"
+        }
+    }   
+
+}
