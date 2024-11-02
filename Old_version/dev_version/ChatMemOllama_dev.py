@@ -162,6 +162,7 @@ class WechatConfig():
             A = "暂时不支持非文本消息"
 
         # 加密响应并回答
+        self.AI_system.save_message("assistant",A)
         result = await self.encode(A,msg_info)
         return result
 

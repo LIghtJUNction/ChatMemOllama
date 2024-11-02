@@ -32,10 +32,10 @@ class Main():
         result = await WeChatMessageHandler.encode(A,msg_info)
         return result
     
-    async def pipe(self,Q,msg_info):
+    async def pipe(self,msg_info):
         # A = Q,msg_info # TODO
-        A = "回答" 
-        return A
+        msg_info = self.AIsystem.chat(msg_info)
+        return msg_info
 
 if __name__ == "__main__":
     # 参考格式如下
@@ -59,10 +59,12 @@ if __name__ == "__main__":
     port = 8000
     while True:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            if s.connect_ex(('0.0.0.0', port)) != 0:
-                print(f"端口冲突:{port}")
-                break
-            port += 1
+            if s.connect_ex(('0.0.0.0', port)) == 0:
+                print(f"端口冲突:{port} -- 自动切换到下一个端口")
+                port += 1
+                time.sleep(1)
+                continue
+            break
     print(f"最终端口:{port}")
     uvicorn.run(ChatMemOllama, host="0.0.0.0", port=port)
 

@@ -1,0 +1,82 @@
+Metadata-Version: 2.1
+Name: optionaldict
+Version: 0.1.2
+Summary: A dict-like object that ignore NoneType values for Python
+Home-page: https://github.com/messense/optionaldict
+Author: messense
+Author-email: messense@icloud.com
+License: UNKNOWN
+Keywords: dict,optional value
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: MacOS
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Utilities
+Description-Content-Type: text/markdown
+
+# optionaldict
+
+[![Build Status](https://travis-ci.org/messense/optionaldict.svg)](https://travis-ci.org/messense/optionaldict)
+[![Build status](https://ci.appveyor.com/api/projects/status/qkj8q2cuitihj2dx/branch/master?svg=true)](https://ci.appveyor.com/project/messense/optionaldict/branch/master)
+[![Coverage Status](https://coveralls.io/repos/messense/optionaldict/badge.svg)](https://coveralls.io/r/messense/optionaldict)
+
+``optionaldict`` is a dict-like object that ignore NoneType values for Python which is pickable and JSON serializable.
+
+# Installation
+
+You can install ``optionaldict`` simply using ``pip``:
+```bash
+pip install optionaldict
+```
+
+# Usage
+``optionaldict``'s usage is very simple, you will import it by:
+
+```python
+from optionaldict import optionaldict
+```
+
+or if you prefer the CamelCasing style naming, you can import it by:
+
+```python
+from optionaldict import OptionalDict
+```
+
+> Tips: In fact, ``optionaldict`` is just an alias for ``OptionalDict``.
+
+Then you can use it just like the built-in ``dict``:
+
+```python
+d1 = optionaldict(a=1, b=None)
+d1['c'] = 2
+d1.setdefault('d', None)
+
+d2 = optionaldict()
+d2['a'] = 1
+d2['b'] = None
+
+d3 = optionaldict({
+    'a': 1,
+    'b': None
+})
+```
+
+

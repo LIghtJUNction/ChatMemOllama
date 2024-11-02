@@ -1,6 +1,6 @@
 import json
 class Config:
-    def __init__(self, filename='config.json'):
+    def __init__(self, filename='./ChatMemOllama/config.json'):
         self.filename = filename
         self.data = {}
         self.load()
@@ -12,17 +12,33 @@ class Config:
                 self.data = json.load(f)
                 self.WechatToken = self.get("WechatToken")
                 self.APPID = self.get("APPID")
-                self.EcoddingAESKey = self.get("EcoddingAESKey")
+                self.EncodingAESKey = self.get("EncodingAESKey")
                 self.AdminID = self.get("AdminID")
                 self.Sukey = self.get("Sukey")
                 self.LlmMode = self.get("LlmMode")
                 self.Tavilykey = self.get("Tavilykey")
+                self.check()
+                print("配置读取完毕")
         except FileNotFoundError:
             print(f"配置文件 {self.filename} 不存在，已创建新的配置。")
             self.data = {}
         except json.JSONDecodeError as e:
             print(f"配置文件格式错误：{e}")
             self.data = {}
+    def check(self):
+        if self.get("LlmMode") == "online":
+            if not self.get_nested('llm', 'OnlineConfig', 'APIKey'):
+                raise ValueError("未设置 OnlineConfig.APIKey")
+            if not self.get_nested('llm', 'OnlineConfig', 'BaseUrl'):
+                raise ValueError("未设置 OnlineConfig.BaseUrl")
+            
+            self.Model=self.get_nested('llm', 'OnlineConfig', 'Model')
+            self.APIKey=self.get_nested('llm', 'OnlineConfig', 'APIKey')
+            self.BaseUrl=self.get_nested('llm', 'OnlineConfig', 'BaseUrl')
+        elif self.get("LlmMode") == "local":
+            self.Model=self.get_nested('llm', 'LocalConfig', 'Model')
+            self.BaseUrl=self.get_nested('llm', 'LocalConfig', 'BaseUrl')
+
 
     def save(self):
         """将当前数据保存到配置文件中。"""
@@ -77,3 +93,8 @@ config.set_nested('http://localhost:11434', 'llm', 'local_config', 'base_url')
 config.save()
 
 """
+
+if __name__ == "__main__":
+    Config = Config()
+    # debug
+    print(Config.__dict__)  
