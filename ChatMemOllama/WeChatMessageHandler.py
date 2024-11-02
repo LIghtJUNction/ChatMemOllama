@@ -1,6 +1,6 @@
 # WechatConfig.py
 import socket
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import PlainTextResponse
 from wechatpy import parse_message, create_reply
 from wechatpy.utils import check_signature
@@ -21,7 +21,7 @@ class WeChatMessageHandler():
     async def check(self, request):  # 检查微信消息签名 // 使用本函数无需额外再调用_get_msg_info
         msg_info = await self._get_msg_info(request)
         try:
-            check_signature(self.WechatToken, msg_info["signature"], msg_info["timestamp"], msg_info["nonce"])
+            check_signature(self.Config.WechatToken, msg_info["signature"], msg_info["timestamp"], msg_info["nonce"])
         except InvalidSignatureException:
             print("无效的微信签名请求")
             raise HTTPException(status_code=403, detail="无效的签名!")
@@ -55,8 +55,6 @@ class WeChatMessageHandler():
         if msg_info["A"] is None:
             raise ValueError("msg_info[A] 未初始化或赋值为 None")
         
-        if reply is None:
-            raise ValueError("reply 对象未正确初始化或赋值为 None")
         reply = create_reply(msg_info["A"],msg_info["msg"])
         result = self.crypto.encrypt_message(reply.render(), msg_info["nonce"], msg_info["timestamp"])  # 加密数据包
         return result  # 加密后的xml
@@ -77,13 +75,14 @@ if __name__ == "__main__":
     WeChatMessageHandler = WeChatMessageHandler(Config)
     ChatMemOllama_devTest = FastAPI()
     # 启动
+    # 提示 如果不添加" : Request "会报错 FastAPI 不能正确解析传入的请求 错误代码:422 Unprocessable Entity
     @ChatMemOllama_devTest.get("/wechat")
-    async def wechat_get(request):
+    async def wechat_get(request : Request):
         msg_info =  await WeChatMessageHandler.check(request)
         result = msg_info["echo_str"]
         return PlainTextResponse(content=result)
     @ChatMemOllama_devTest.post("/wechat")
-    async def wechat_post(request):
+    async def wechat_post(request : Request):
         msg_info = await WeChatMessageHandler.check(request)
         msg_info = await WeChatMessageHandler.decode(msg_info)
         print(msg_info)
