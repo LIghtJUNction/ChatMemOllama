@@ -129,3 +129,4 @@ cython_debug/
 # Sensitive configuration files
 ChatMemOllama/config.json
 Old_version/dev_version/config.json
+ChatMemOllama/config.json
