@@ -1,7 +1,7 @@
 {
     "WECHAT_TOKEN": "xxxxxx",
     "APPID": "xxxxx",
-    "EncodingAESKey": "xxxxx",
+    "EncodingAESKey": "xxxxxxxxxxxxxxxxxxxxxxxxxx",
     "AdminID": "",
     "model": "llama3.1:latest",
     "embedding_model": "nomic-embed-text:latest",
