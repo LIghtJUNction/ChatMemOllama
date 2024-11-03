@@ -1,11 +1,13 @@
+from datetime import time
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import PlainTextResponse
-import uvicorn
-import socket
-import ChatMemOllama.WeChatMessageHandler as WeChatMessageHandler
-import AIsystem
+from Config import Config   # 从Config.py导入Config类
+from WeChatMessageHandler import WeChatMessageHandler
+from AIsystem import AIsystem
 import Guide
 import atexit
+import uvicorn
+import socket
 
 class Main():
     def __init__(self, WeChatMessageHandler, AIsystem):
@@ -21,28 +23,31 @@ class Main():
         msg_info = await WeChatMessageHandler.decode(msg_info)
         # 这里开始处理消息 用户提问是 msg_info["msg"].content ， 消息类型：msg_info["msg"].type 用户openid：msg_info["msg"].source 
         Q = msg_info["msg"].content
+        msg_info["Q"]=Q
 
         if msg_info["msg"].type == "text":
             # 这里将问题Q传递给管道处理 看下面
-            A = await self.pipe(Q,msg_info)
+            msg_info = await self.pipe(msg_info)
+            
         else: # TODO 先把文本消息处理搞好再考虑支持其他类型!
             A = "暂时不支持非文本消息"
 
         # 加密响应并回答
-        result = await WeChatMessageHandler.encode(A,msg_info)
+        result = await WeChatMessageHandler.encode(msg_info)
         return result
     
     async def pipe(self,msg_info):
         # A = Q,msg_info # TODO
-        msg_info = self.AIsystem.chat(msg_info)
+        msg_info = await self.AIsystem.chat(msg_info)
         return msg_info
 
 if __name__ == "__main__":
     # 参考格式如下
     # POST /wechat?signature=待定&timestamp=待定&nonce=待定&openid=待定&encrypt_type=aes&msg_signature=待定 HTTP/1.1
     ChatMemOllama = FastAPI()
-    WeChatMessageHandler = WeChatMessageHandler()
-    AIsystem = AIsystem()
+    Config = Config()
+    WeChatMessageHandler = WeChatMessageHandler(Config)
+    AIsystem = AIsystem(Config)
     Main = Main(WeChatMessageHandler,AIsystem)
 
     # 启动

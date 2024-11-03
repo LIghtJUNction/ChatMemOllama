@@ -111,6 +111,8 @@ class AIsystem:
 
 
     def save_message(self, msg_info, role, content, name=None):
+        msg_info["messages"] = [] if "messages" not in msg_info else msg_info["messages"]
+        msg_info["k"] = 20 if "k" not in msg_info else msg_info["k"]
         message = {"role": role, "content": content}
         if name:
             message["name"] = name
@@ -125,8 +127,10 @@ class AIsystem:
         """
         聊天主函数
         """
-        if not msg_info["messages"]:
+        if msg_info["openid"] not in self.users:
+            self.users.append(msg_info["openid"])
             self.init_messages(msg_info)
+                        
 
         if self.LlmMode == 'local':
             NEW_msg_info = await self._chat_ollama(msg_info)
@@ -162,6 +166,7 @@ class AIsystem:
         return NEW_msg_info
     
     async def _chat_openai(self,msg_info):
+        msg_info["A"] = "" if "A" not in msg_info else msg_info["A"]
         
         self.save_message(msg_info, "user", f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {datetime.datetime.now().strftime('%A')}] {msg_info['msg'].content}")
         UseTool = await self._tool_calling_openai(msg_info)
@@ -388,7 +393,7 @@ if __name__ == "__main__":
         msg_info = {
             "openid": "user_openid_12345",
             "msg": MessageObject,
-            "model": "llama3.1",
+            "model": "llama3.1", # 会被Config里面的覆盖掉,请去Config里面修改
             "k": 3,
             "A": "",
             "messages": []
