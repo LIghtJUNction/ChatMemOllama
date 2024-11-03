@@ -12,6 +12,7 @@ ChatMemOllama 是一个基于 FastAPI 和 WeChat 的聊天机器人项目，支�
 加入开发者群聊，共同进步
 885986098
 
+
 # 效果展示
 
 ### 在线搜索
@@ -20,19 +21,11 @@ ChatMemOllama 是一个基于 FastAPI 和 WeChat 的聊天机器人项目，支�
 
 ![1730618625240](images/README/1730618625240.png)
 
-
 ### 查询课表
 
 ![1730618537808](images/README/1730618537808.png)
 
 （这个函数调用属于个人用途，每个学校的格式可能有所不同，这里是通过抓包获取的课表信息  如果不会抓包可以试试直接套用我这个格式。）
-
-
-
-
-
-
-
 
 ## 将微信一系列表情包：[表情名]写在系统提示词里使用效果--模型llama3.1:8b
 
@@ -112,11 +105,8 @@ requirements.txt
 
 ## 配置文件
 
-请在 `chatmemollama/config.json` 中配置以下
+请在 `chatmemollama/config.json` 中配置以下内容
 
-内容
-
-：
 
 ```json
 {
@@ -130,6 +120,10 @@ requirements.txt
     "Tavilykey": "your_tavily_key"
 }
 ```
+
+![1730622974167](images/README/1730622974167.png)
+
+这是微信公众号的配置  -- 在URL/wechat 接收信息后转发给本地端口8000（默认）
 
 ## 运行项目
 
