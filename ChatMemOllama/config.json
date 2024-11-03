@@ -1,13 +1,11 @@
 {
-    "WechatToken": "xxxxxx",
-    "APPID": "xxxxx",
-    "EncodingAESKey": "xxxxx",
+    "WechatToken": "LIghtJUNction",
+    "APPID": "wx98ce7844628301fc",
+    "EncodingAESKey": "CI2VFoL9Ra3r4ca7jz7FccYPC0e2cctCX0Piwu9shxi",
     "AdminID": "",
-    "Tavilykey" : "xxxx",
+    "Tavilykey" : "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",
     "SuKey":"",
-    "LlmMode": "local",
-
-
+    "LlmMode": "online",
 
     "llm": {
         "local": "ollama",
@@ -17,9 +15,9 @@
         },
          "online": "openai",
          "OnlineConfig": {
-             "Model": "gpt-4o",
-             "APIKey": "xxxxxxxxxxxxxx",
-             "BaseUrl": "xxxxxxxxxxxxxxxxx"
+             "Model": "gpt-4o-mini",
+             "APIKey": "sk-tuA64sBCTTmIu8t83eAd5a9730224c6c972a5872F1D964E9",
+             "BaseUrl": "https://api.gpt.ge/v1"
          }
       },
     "embedder": {

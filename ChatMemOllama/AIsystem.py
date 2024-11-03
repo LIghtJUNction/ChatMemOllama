@@ -39,58 +39,71 @@ class AIsystem:
             self.LlmMode = 'local'
             print("默认为 local")
         self.tools_ollama = [
-            {
-                "type": "function",
-                "function": {
-                    "name": "search_online",
-                    "description": "在线搜索，请先翻译为英文再搜索",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "query": {"type": "string", "description": "搜索关键词"},
-                        },
-                        "required": ["query"],
-                    },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_online",
+            "description": "在线搜索，请先翻译为英文再搜索",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "搜索关键词"},
                 },
+                "required": ["query"],
             },
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_time",
-                    "description": "获取当前时间",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {},
-                        "required": [],
-                    },
+        },
+    },
+
+    {
+        "type": "function",
+        "function": {
+            "name": "get_courses",
+            "description": "根据指定日期返回该日期的课程信息，如果不指定日期，默认为今天",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "date_str": {
+                        "type": "string",
+                        "description": "指定的日期，格式为 'YYYY-MM-DD'，默认为当前日期（今天）"
+                    }
                 },
-            }
-        ]
+                "required": [],
+            },
+        },
+    },
+]
 
         self.tools_openai = [
-            {
-                "name": "search_online",
-                "description": "在线搜索任意内容",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "query": {
-                            "type": "string",
-                            "description": "搜索关键词"
-                        }
-                    },
-                    "required": ["query"]
+    {
+        "name": "search_online",
+        "description": "在线搜索任意内容",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "搜索关键词"
                 }
             },
-            {
-                "name": "get_time",
-                "description": "获取当前时间",
-                "parameters": {
-                    "type": "object",
-                    "properties": {}
+            "required": ["query"]
+        }
+    },
+
+    {
+        "name": "get_courses",
+        "description": "根据指定日期返回该日期的课程信息，如果不指定日期，默认为今天",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "date_str": {
+                    "type": "string",
+                    "description": "指定的日期，格式为 'YYYY-MM-DD'，默认为当前日期（今天）"
                 }
-            }
-        ]
+            },
+            "required": []
+        }
+    }
+]
 
     def init_messages(self,msg_info):
         msg_info["messages"] = []
@@ -128,7 +141,7 @@ class AIsystem:
 
 
     async def _chat_ollama(self,msg_info):
-        self.save_message(msg_info, "user", msg_info["msg"].content)
+        self.save_message(msg_info, "user", f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {datetime.datetime.now().strftime('%A')}] {msg_info["msg"].content}" )
         UseTool = await self._tool_calling_ollama(msg_info)
         if not UseTool:
             NEW_msg_info = msg_info
@@ -149,7 +162,8 @@ class AIsystem:
         return NEW_msg_info
     
     async def _chat_openai(self,msg_info):
-        self.save_message(msg_info, "user", msg_info["msg"].content)
+        
+        self.save_message(msg_info, "user", f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {datetime.datetime.now().strftime('%A')}] {msg_info['msg'].content}")
         UseTool = await self._tool_calling_openai(msg_info)
         if not UseTool:
             NEW_msg_info = msg_info
@@ -313,17 +327,57 @@ class AIsystem:
         except Exception as e:
             return f"搜索失败，错误原因: {str(e)}"
 
-    async def _get_time(self) -> str:
-        result = {"timestamp": datetime.datetime.now().isoformat()}
+
+    async def _get_courses(self, date_str=None):
+        if date_str is None:
+            date_str = datetime.datetime.now().strftime('%Y-%m-%d')
+    
+        # 读取课程信息
+        with open('./ChatMemOllama/CoursesInfo.json', 'r', encoding='utf-8') as f:
+            class_info = json.load(f)
+    
+        # 计算查询日期是第几周和星期几
+        start_date = datetime.datetime.strptime('2024-09-09', '%Y-%m-%d')  # 学期开始日期
+        query_date = datetime.datetime.strptime(date_str, '%Y-%m-%d')
+        delta_days = (query_date - start_date).days
+        week_k = delta_days // 7 + 1
+        target_weekday = query_date.weekday()  # 0-6，对应周一到周日
+    
+        courses = []
+        for course in class_info:
+            weeks_str = course.get('weeks', '')
+            if weeks_str:
+                weeks_list = list(map(int, weeks_str.split(',')))
+                if week_k in weeks_list:
+                    # 获取课程的星期几
+                    course_weekday = datetime.datetime.strptime(course['date'], '%Y-%m-%d').weekday()
+                    if course_weekday == target_weekday:
+                        # 计算课程在查询日期的实际日期
+                        course_date = start_date + datetime.timedelta(weeks=(week_k - 1), days=course_weekday)
+                        course_info = {
+                            "课程名称": course['course_name'],
+                            "日期": course_date.strftime('%Y-%m-%d'),
+                            "上课时间": f"{course['start_time']} - {course['end_time']}",
+                            "上课地点": course['rooms'][0]['address'],
+                            "任课老师": course['teachers'][0]['name']
+                        }
+                        courses.append(course_info)
+    
+        result = {
+            "课程": courses,
+            "查询日期": date_str,
+            "当前时间": datetime.datetime.now().isoformat()
+        }
         return json.dumps(result, ensure_ascii=False, indent=4)
+
 
 # 示例使用
 
 if __name__ == "__main__":
+    Config = Config()
+    ai_system = AIsystem(Config=Config)
     async def main():
-        Config = Config()
         # 初始化 AIsystem
-        ai_system = AIsystem(Config=Config)
         class MessageObject:
             def __init__(self, source: str, content: str):
                 self.source = source
