@@ -1,9 +1,9 @@
 {
-    "WechatToken": "xxxxxxxxxxx",
-    "APPID": "xxxxxxxxxxxxxx",
-    "EncodingAESKey": "xxxxxxxxxxxxxxxxx",
+    "WechatToken": "xxxxxxxxxxxxxxxxxxxxx",
+    "APPID": "xxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "EncodingAESKey": "xxxxxxxxxxxxxxxxxxxxxxxxxxx",
     "AdminID": "",
-    "Tavilykey" : "tvly-xxxxxxxxxxxxx",
+    "Tavilykey" : "tvly-xxxxxxxxxxxxxxxxxxxxxxxxx",
     "SuKey":"",
     "LlmMode": "online",
 
@@ -16,7 +16,7 @@
          "online": "openai",
          "OnlineConfig": {
              "Model": "gpt-4o-mini",
-             "APIKey": "sk-xxxxxxxxxxxxxxxxxxx",
+             "APIKey": "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxx",
              "BaseUrl": "https://api.gpt.ge/v1"
          }
       },
