@@ -53,7 +53,7 @@ if __name__ == "__main__":
     # 启动
     @ChatMemOllama.get("/wechat")
     async def wechat_get(request: Request):
-        result = await Main.GET()  # 这是必须的步骤，直接调用异步函数返回的是一个协程对象 必须用await调用 或者 async.run()
+        result = await Main.GET(request)  # 这是必须的步骤，直接调用异步函数返回的是一个协程对象 必须用await调用 或者 async.run()
         return PlainTextResponse(content=result)
 
     @ChatMemOllama.post("/wechat")
