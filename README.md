@@ -105,8 +105,7 @@ requirements.txt
 
 ## 配置文件
 
-请在 `chatmemollama/config.json` 中配置以下内容
-
+`关于配置的解释` 
 
 ```json
 {
