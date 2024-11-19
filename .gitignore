@@ -2,3 +2,6 @@
 Old_version/dev_version/config.json
 ChatMemOllama/config.json
 /.venv
+ChatMemOllama/CoursesInfo.json
+/.vscode
+ChatMemOllama/CoursesInfo.json

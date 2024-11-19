@@ -39,20 +39,20 @@ class AIsystem:
             self.LlmMode = 'local'
             print("默认为 local")
         self.tools_ollama = [
-    {
-        "type": "function",
-        "function": {
-            "name": "search_online",
-            "description": "在线搜索，请先翻译为英文再搜索",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "query": {"type": "string", "description": "搜索关键词"},
-                },
-                "required": ["query"],
-            },
-        },
-    },
+#     {
+#         "type": "function",
+#         "function": {
+#             "name": "search_online",
+#             "description": "在线搜索，请先翻译为英文再搜索,精简回答,尽量不要使用这个函数",
+#             "parameters": {
+#                 "type": "object",
+#                 "properties": {
+#                     "query": {"type": "string", "description": "搜索关键词"},
+#                 },
+#                 "required": ["query"],
+#             },
+#         },
+#     },
 
     {
         "type": "function",
@@ -76,7 +76,7 @@ class AIsystem:
         self.tools_openai = [
     {
         "name": "search_online",
-        "description": "在线搜索任意内容",
+        "description": "在线搜索任意内容,简要的回答",
         "parameters": {
             "type": "object",
             "properties": {
@@ -145,6 +145,8 @@ class AIsystem:
 
 
     async def _chat_ollama(self,msg_info):
+        if "A" not in msg_info:
+            msg_info["A"] = ""
         self.save_message(msg_info, "user", f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {datetime.datetime.now().strftime('%A')}] {msg_info["msg"].content}" )
         UseTool = await self._tool_calling_ollama(msg_info)
         if not UseTool:
@@ -202,9 +204,9 @@ class AIsystem:
             tools=self.tools_ollama
         )
 
-        print("应该调用的工具?完整响应：",response)
-
-        tool_calls = response['message'].get('tool_calls')
+        response_data = await response  # 注意response是一个协程对象，需要await获取结果
+        print("应该调用的工具?完整响应：", response_data)
+        tool_calls = response_data['message'].get('tool_calls')
         
         if tool_calls:
             results = await self._execute_tool_calls_ollama(tool_calls)
@@ -363,8 +365,8 @@ class AIsystem:
                             "课程名称": course['course_name'],
                             "日期": course_date.strftime('%Y-%m-%d'),
                             "上课时间": f"{course['start_time']} - {course['end_time']}",
-                            "上课地点": course['rooms'][0]['address'],
-                            "任课老师": course['teachers'][0]['name']
+                            "上课地点": course['rooms'][0]['address'] if course['rooms'] else "未指定",
+                            "任课老师": course['teachers'][0]['name'] if course['teachers'] else "未指定",
                         }
                         courses.append(course_info)
     
@@ -393,7 +395,7 @@ if __name__ == "__main__":
         msg_info = {
             "openid": "user_openid_12345",
             "msg": MessageObject,
-            "model": "llama3.1", # 会被Config里面的覆盖掉,请去Config里面修改
+            # "model": "llama3.1", # 会被Config里面的覆盖掉,请去Config里面修改
             "k": 3,
             "A": "",
             "messages": []
