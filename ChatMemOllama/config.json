@@ -1,9 +1,9 @@
 {
     "WechatToken": "LIghtJUNction_wechat",
-    "APPID": "wx98ce7844628301fc",
-    "EncodingAESKey": "tXyn16dxliUtzSBF4EtHAA5asj5oGSJvth4qXDYmHy5",
+    "APPID": "wx66ce5643628302dc",
+    "EncodingAESKey": "tXyn19dxliUtzSBF5EtHAA5asj5oGSJvth5qXDYmHy5",
     "AdminID": "",
-    "Tavilykey" : "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",
+    "Tavilykey" : "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",
     "SuKey":"",
     "LlmMode": "online",
 
