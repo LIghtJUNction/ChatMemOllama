@@ -16,7 +16,7 @@
          "online": "openai",
          "OnlineConfig": {
              "Model": "gpt-4o-mini",
-             "APIKey": "sk-dHs3IESg1TENqLIPA7De66672d1a49C1A2Cf1a72F4C97e07",
+             "APIKey": "sk-dHs7IESg1TENqLIPA7De66672d1a55C1A2Cf1a72F4C97e46",
              "BaseUrl": "https://api.gpt.ge/v1"
          }
       },
