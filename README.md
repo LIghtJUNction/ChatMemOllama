@@ -89,7 +89,7 @@ uvicorn
 requests
 beautifulsoup4
 mem0
-tavily
+tavily-Python
 ```
 
 您可以使用以下命令安装依赖：
