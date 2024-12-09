@@ -1,3 +1,7 @@
+# 更新
+计划改用robyn以加快速度
+
+
 # ChatMemOllama
 
 ChatMemOllama 是一个基于 FastAPI 和 WeChat 的聊天机器人项目，支持 AI 对话和管理员模式。
