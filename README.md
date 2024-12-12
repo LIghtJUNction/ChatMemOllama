@@ -1,10 +1,15 @@
+# ChatMemOllama
+[![Stars](https://img.shields.io/github/stars/LIghtJUNction/ChatMemOllama?label=stars)](https://github.com/LIghtJUNction)
+[![Download](https://img.shields.io/github/downloads/LIghtJUNction/ChatMemOllama/total)](https://github.com/LIghtJUNction/ChatMemOllama/releases)
+[![Release](https://img.shields.io/github/v/release/LIghtJUNction/ChatMemOllama?label=release)](https://github.com/LIghtJUNction/ChatMemOllama/releases/latest)
+[![License](https://img.shields.io/github/license/LIghtJUNction/ChatMemOllama?label=License)](https://choosealicense.com/licenses/gpl-3.0)
+
+ChatMemOllama 是一个基于 FastAPI 和 WeChat 的聊天机器人项目，支持 AI 对话和管理员模式。
+
+
 # 更新
 计划改用robyn以加快速度
 
-
-# ChatMemOllama
-
-ChatMemOllama 是一个基于 FastAPI 和 WeChat 的聊天机器人项目，支持 AI 对话和管理员模式。
 
 ## 终极目标：
 
