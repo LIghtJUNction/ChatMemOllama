@@ -91,7 +91,7 @@ requirements.txt
 
 ## 安装依赖
 
-请确保您的 `requirements.txt` 文件包含以下依赖项：
+正式版未发布-不提供具体的依赖安装指南
 
 ```plaintext
 fastapi
