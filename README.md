@@ -12,6 +12,9 @@ ChatMemOllama 是一个 WeChat公众号 的聊天机器人项目，支持 AI 对
 # 更新
 [计划改用robyn以加快速度](https://github.com/sparckles/robyn)
 
+# sponsor
+[buy me a coffee](https://github.com/LIghtJUNction/lightjunction/tree/master/sponsor)
+
 
 ## 终极目标：
 
