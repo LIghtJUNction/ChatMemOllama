@@ -6,6 +6,8 @@
 
 ChatMemOllama 是一个基于 FastAPI 和 WeChat 的聊天机器人项目，支持 AI 对话和管理员模式。
 
+![Alt](https://repobeats.axiom.co/api/embed/61c5ea935a0eaf66e11c190407c20fa65da9ffa5.svg "Repobeats analytics image")
+
 
 # 更新
 计划改用robyn以加快速度
