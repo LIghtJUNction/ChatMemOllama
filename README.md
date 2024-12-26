@@ -10,7 +10,7 @@ ChatMemOllama 是一个基于 FastAPI 和 WeChat 的聊天机器人项目，支�
 
 
 # 更新
-计划改用robyn以加快速度
+[计划改用robyn以加快速度](https://github.com/sparckles/robyn)
 
 
 ## 终极目标：
