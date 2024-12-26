@@ -4,7 +4,7 @@
 [![Release](https://img.shields.io/github/v/release/LIghtJUNction/ChatMemOllama?label=release)](https://github.com/LIghtJUNction/ChatMemOllama/releases/latest)
 [![License](https://img.shields.io/github/license/LIghtJUNction/ChatMemOllama?label=License)](https://choosealicense.com/licenses/gpl-3.0)
 
-ChatMemOllama 是一个基于 FastAPI 和 WeChat 的聊天机器人项目，支持 AI 对话和管理员模式。
+ChatMemOllama 是一个 WeChat公众号 的聊天机器人项目，支持 AI 对话和管理员模式。 包含关键词匹配回答 - AI模式与关键词匹配模式切换 - 优化5秒超时处理 - 微信公众号使用在线/本地AI大模型回答用户 - 函数调用能力 - 目前状态：开发中
 
 [![Alt](https://repobeats.axiom.co/api/embed/61c5ea935a0eaf66e11c190407c20fa65da9ffa5.svg "Repobeats analytics image")](https://github.com/LIghtJUNction/ChatMemOllama/)
 
