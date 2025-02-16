@@ -1,0 +1,36 @@
+AIROOT = "C:\Users\light\Documents\GitHub\ChatMemOllama\AIROOT"
+# 连接至wechat
+WechatToken = "LIghtJUNction_wechat"
+APPID = "wx66ce5643628302dc"
+EncodingAESKey = "tXyn19dxliUtzSBF5EtHAA5asj5oGSJvth5qXDYmHy5"
+# 管理员的微信openid
+AdminID = ""
+# 可选-在线搜索服务
+Tavilykey = "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"
+# 鉴权-设置管理员
+SuKey = ""
+# LLM设置
+LlmMode = "online"
+
+[llm]
+local = "ollama"
+online = "openai"
+
+[llm.LocalConfig]
+Model = "llama3.1"
+base_url = "http://localhost:11434"
+
+[llm.OnlineConfig]
+Model = "gpt-4o-mini"
+APIKey = "sk-dHs7IESg1TENqLIPA7De66672d1a55C1A2Cf1a72F4C97e46"
+BaseUrl = "https://api.gpt.ge/v1"
+
+# 嵌入模型设置
+[embedder]
+provider = "ollama"
+
+[embedder.config]
+Model = "nomic-embed-text:latest"
+BaseUrl = "http://localhost:11434"
+
+# 以上数据均不可用,演示作用

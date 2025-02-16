@@ -1,13 +1,10 @@
+import robyn
+
 from datetime import time
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import PlainTextResponse
-from Config import Config   # 从Config.py导入Config类
+from robyn import Request, PlainTextResponse
 from WeChatMessageHandler import WeChatMessageHandler
-from AIsystem import AIsystem
-import Guide
-import atexit
-import uvicorn
-import socket
+from ChatMemOllama.AISYSTEM.AIsystem import AIsystem
+
 
 class Main():
     def __init__(self, WeChatMessageHandler, AIsystem):
@@ -44,11 +41,8 @@ class Main():
 if __name__ == "__main__":
     # 参考格式如下
     # POST /wechat?signature=待定&timestamp=待定&nonce=待定&openid=待定&encrypt_type=aes&msg_signature=待定 HTTP/1.1
-    ChatMemOllama = FastAPI()
-    Config = Config()
-    WeChatMessageHandler = WeChatMessageHandler(Config)
-    AIsystem = AIsystem(Config)
-    Main = Main(WeChatMessageHandler,AIsystem)
+    ChatMemOllama = robyn(__file__)
+    Main = Main()
 
     # 启动
     @ChatMemOllama.get("/wechat")
@@ -61,17 +55,7 @@ if __name__ == "__main__":
         result = await Main.POST(request)
         return PlainTextResponse(content=result)
     
-    port = 8000
-    while True:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            if s.connect_ex(('0.0.0.0', port)) == 0:
-                print(f"端口冲突:{port} -- 自动切换到下一个端口")
-                port += 1
-                time.sleep(1)
-                continue
-            break
-    print(f"最终端口:{port}")
-    uvicorn.run(ChatMemOllama, host="0.0.0.0", port=port)
+    ChatMemOllama.start(port=8009)  # 启动服务
 
 
 
