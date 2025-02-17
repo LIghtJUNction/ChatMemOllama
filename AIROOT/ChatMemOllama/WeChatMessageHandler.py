@@ -1,6 +1,6 @@
 from robyn import Robyn
 from robyn.responses import PlainTextResponse
-from robyn.request import Request
+from robyn.robyn import Request
 
 from wechatpy import parse_message, create_reply
 from wechatpy.utils import check_signature
