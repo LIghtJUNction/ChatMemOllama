@@ -14,6 +14,9 @@ aivfs是一个开发中的项目，正在本地快速迭代开发
 
 此外，还将构建一个类似于GNU core utilies 的基础项目
 
+更新日志/计划将发布在微信公众号（LIghtJUNction）
+正式版具体发布时间未定
+
 ![Designer](https://github.com/user-attachments/assets/31ac7b3c-850d-4e45-8870-bc2be83a1c5c)
 
 
