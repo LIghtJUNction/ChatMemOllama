@@ -20,9 +20,6 @@ aivfs是一个开发中的项目，正在本地快速迭代开发
 [![Alt](https://repobeats.axiom.co/api/embed/61c5ea935a0eaf66e11c190407c20fa65da9ffa5.svg "Repobeats analytics image")](https://github.com/LIghtJUNction/ChatMemOllama/)
 
 
-# 更新
-[计划改用robyn以加快速度](https://github.com/sparckles/robyn)
-
 # sponsor
 [buy me a coffee](https://github.com/LIghtJUNction/lightjunction/tree/master/sponsor)
 
