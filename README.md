@@ -4,7 +4,16 @@
 [![Release](https://img.shields.io/github/v/release/LIghtJUNction/ChatMemOllama?label=release)](https://github.com/LIghtJUNction/ChatMemOllama/releases/latest)
 [![License](https://img.shields.io/github/license/LIghtJUNction/ChatMemOllama?label=License)](https://choosealicense.com/licenses/gpl-3.0)
 
-ChatMemOllama 是一个 WeChat公众号 的聊天机器人项目，支持 AI 对话和管理员模式。 包含关键词匹配回答 - AI模式与关键词匹配模式切换 - 优化5秒超时处理 - 微信公众号使用在线/本地AI大模型回答用户 - 函数调用能力 - 目前状态：开发中
+# ChatMemOllama 
+一个 基于 aivfs的项目 
+ChatMenOllama.py位于AI虚拟文件系统根目录
+/bin/ 负责连接至微信公众号
+
+aivfs是一个开发中的项目，正在本地快速迭代开发
+详情请查看本人仓库
+
+此外，还将构建一个类似于GNU core utilies 的基础项目
+
 ![Designer](https://github.com/user-attachments/assets/31ac7b3c-850d-4e45-8870-bc2be83a1c5c)
 
 
@@ -17,18 +26,13 @@ ChatMemOllama 是一个 WeChat公众号 的聊天机器人项目，支持 AI 对
 # sponsor
 [buy me a coffee](https://github.com/LIghtJUNction/lightjunction/tree/master/sponsor)
 
-
-## 终极目标：
-
-创造一个拥有持久记忆的私人AI数字人
-像和其他人聊天一样，在微信上即可随时随地开聊
+v1.0 本地开发中
 
 
-加入开发者群聊，共同进步
-885986098
 
+# 旧版本展示（包括Relese存档）
 
-# 效果展示
+# 效果展示（部分）
 
 ### 在线搜索
 
@@ -51,89 +55,7 @@ AI就学会了使用微信表情包和我进行对话
 
 ![效果二](images/README/1729082774724.png)
 
-## 项目结构
 
-```
-doc/ 
-chatmemollama/
-  
-
-ChatMemOllama_dev.py
-    config.json
-    LICENSE
-
-README.md
-
-    Users/
-docs/
-    zh_cn.md
-images/
-    README/
-LICENSE
-Old_version/
-  
-
-ChatMemOllama.py
-
-
-    JustChat.py
-  
-
-readme.md
-
-
-
-
-README.md
-
-
-
-
-requirements.txt
-
-
-```
-
-## 安装依赖
-
-正式版未发布-不提供具体的依赖安装指南
-
-```plaintext
-fastapi
-wechatpy
-uvicorn
-requests
-beautifulsoup4
-mem0
-tavily-Python
-```
-
-您可以使用以下命令安装依赖：
-
-```sh
-pip install -r 
-
-requirements.txt
-
-
-```
-
-## 配置文件
-
-`关于配置的解释` 
-
-```json
-{
-    "WECHAT_TOKEN": "your_wechat_token",
-    "APPID": "your_app_id",
-    "EncodingAESKey": "your_encoding_aes_key",
-    "AdminID": "your_admin_id",
-    "mem0config": "your_mem0_config",
-    "model": "your_model",
-    "verify_status": "False",
-    "Tavilykey": "your_tavily_key"
-}
-```
 
 ![1730622974167](images/README/1730622974167.png)
 
@@ -169,11 +91,10 @@ chatmemollama_dev.py
 ## 贡献
 
 欢迎提交问题和贡献代码！请确保您的代码符合项目的编码规范。
+请查阅Python编程规范，正式版将严格按照规范编程
 
 
-## 后续考虑制作GUI管理界面
-
-## 早期开发阶段 任何部分都可能会变！
+## 后续考虑制作GUI管理界面 例如WEBUI
 
 ## 许可证
 
