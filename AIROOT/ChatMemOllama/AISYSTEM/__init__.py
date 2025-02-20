@@ -1,1 +1,0 @@
-print("@LIghtJUNction,启动!")
