@@ -27,7 +27,7 @@ aivfs是一个开发中的项目，正在本地快速迭代开发
 
 [buy me a coffee](https://github.com/LIghtJUNction/lightjunction/tree/master/sponsor)
 
-v1.0 本地开发中
+v1.0 本地开发中 -------------------------------------------------------------------------
 
 @AIVFS : [LIghtJUNction/AIVFS: Artificial Intelligence Virtual FileSystem](https://github.com/LIghtJUNction/AIVFS)
 
@@ -37,14 +37,9 @@ v1.0 本地开发中
 
 
 
+## 旧版本展示（包括Relese存档）
 
-
-
-
-
-# 旧版本展示（包括Relese存档）
-
-# 效果展示（部分）
+效果展示（部分）
 
 ### 在线搜索
 
@@ -69,15 +64,9 @@ AI就学会了使用微信表情包和我进行对话
 
 ![1730622974167](images/README/1730622974167.png)
 
-这是微信公众号的配置  -- 在URL/wechat 接收信息后转发给本地端口8000（默认）
+这是微信公众号的配置
 
 ## 运行项目
-
-您可以使用以下命令启动项目：
-
-```py
-chatmemollama_dev.py
-```
 
 
 ## 贡献
