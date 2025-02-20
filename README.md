@@ -1,11 +1,13 @@
 # ChatMemOllama
+
 [![Stars](https://img.shields.io/github/stars/LIghtJUNction/ChatMemOllama?label=stars)](https://github.com/LIghtJUNction)
 [![Download](https://img.shields.io/github/downloads/LIghtJUNction/ChatMemOllama/total)](https://github.com/LIghtJUNction/ChatMemOllama/releases)
 [![Release](https://img.shields.io/github/v/release/LIghtJUNction/ChatMemOllama?label=release)](https://github.com/LIghtJUNction/ChatMemOllama/releases/latest)
 [![License](https://img.shields.io/github/license/LIghtJUNction/ChatMemOllama?label=License)](https://choosealicense.com/licenses/gpl-3.0)
 
-# ChatMemOllama 
-一个 基于 aivfs的项目 
+# ChatMemOllama
+
+一个 基于 aivfs的项目
 ChatMenOllama.py位于AI虚拟文件系统根目录
 /bin/ 负责连接至微信公众号
 
@@ -19,14 +21,24 @@ aivfs是一个开发中的项目，正在本地快速迭代开发
 
 ![Designer](https://github.com/user-attachments/assets/31ac7b3c-850d-4e45-8870-bc2be83a1c5c)
 
-
 [![Alt](https://repobeats.axiom.co/api/embed/61c5ea935a0eaf66e11c190407c20fa65da9ffa5.svg "Repobeats analytics image")](https://github.com/LIghtJUNction/ChatMemOllama/)
 
-
 # sponsor
+
 [buy me a coffee](https://github.com/LIghtJUNction/lightjunction/tree/master/sponsor)
 
 v1.0 本地开发中
+
+@AIVFS : [LIghtJUNction/AIVFS: Artificial Intelligence Virtual FileSystem](https://github.com/LIghtJUNction/AIVFS)
+
+@AIVFSU : [LIghtJUNction/AIVFSU: AIVFS Utilities](https://github.com/LIghtJUNction/AIVFSU)
+
+@AIVK : [LIghtJUNction/AIVK: AI内核计划](https://github.com/LIghtJUNction/AIVK)
+
+
+
+
+
 
 
 
@@ -55,8 +67,6 @@ AI就学会了使用微信表情包和我进行对话
 
 ![效果二](images/README/1729082774724.png)
 
-
-
 ![1730622974167](images/README/1730622974167.png)
 
 这是微信公众号的配置  -- 在URL/wechat 接收信息后转发给本地端口8000（默认）
@@ -69,30 +79,11 @@ AI就学会了使用微信表情包和我进行对话
 chatmemollama_dev.py
 ```
 
-## 功能说明
-
-### 用户命令
-
-- `help` - 查看帮助
-- `sudo su` - 进入管理员模式（仅限管理员）
-- `AI` - 重新开启 AI 对话
-- `exit` - 退出 AI 对话
-
-### 管理员命令(旧版有-新版正在制作)
-
-- `ps` - 列出正在运行的模型
-- `verify_status` - 确认身份（重启后对用户0免鉴权）
-- `list` - 列出已有模型
-- `models` - 切换模型
-- `pull` - 拉取模型
-- `exit` - 退出管理员模式
-- `help` - 查看管理员命令帮助
 
 ## 贡献
 
 欢迎提交问题和贡献代码！请确保您的代码符合项目的编码规范。
 请查阅Python编程规范，正式版将严格按照规范编程
-
 
 ## 后续考虑制作GUI管理界面 例如WEBUI
 
