@@ -28,6 +28,25 @@ v1.0 本地开发中 -----------------------------------------------------------
 
 @AIVK : [LIghtJUNction/AIVK: AI内核计划](https://github.com/LIghtJUNction/AIVK)
 
+# 使用指南：
+1.https://chatbot.weixin.qq.com
+微信对话开发平台
+注册新机器人 -- 原微信开发平台服务器配置选项需关闭！
+
+2.点击 管理-应用绑定-开发API-申请
+审核很快
+记录关键信息 ： APPID / token / Encoding AESKey / 
+3.编辑 - 填写回调地址 
+内网运行 - 花生壳/其他工具 - 穿透到公网 - 填写
+
+
+
+
+
+
+
+
+
 
 ## 贡献
 
