@@ -7,14 +7,7 @@
 
 # ChatMemOllama
 
-一个 基于 aivfs的项目
-ChatMenOllama.py位于AI虚拟文件系统根目录
-/bin/ 负责连接至微信公众号
-
-aivfs是一个开发中的项目，正在本地快速迭代开发
-详情请查看本人仓库
-
-此外，还将构建一个类似于GNU core utilies 的基础项目
+没有创新不如不开发
 
 更新日志/计划将发布在微信公众号（LIghtJUNction）
 正式版具体发布时间未定
@@ -34,39 +27,6 @@ v1.0 本地开发中 -----------------------------------------------------------
 @AIVFSU : [LIghtJUNction/AIVFSU: AIVFS Utilities](https://github.com/LIghtJUNction/AIVFSU)
 
 @AIVK : [LIghtJUNction/AIVK: AI内核计划](https://github.com/LIghtJUNction/AIVK)
-
-
-
-## 旧版本展示（包括Relese存档）
-
-效果展示（部分）
-
-### 在线搜索
-
-![1730618598001](images/README/1730618598001.png)
-
-![1730618625240](images/README/1730618625240.png)
-
-### 查询课表
-
-![1730618537808](images/README/1730618537808.png)
-
-（这个函数调用属于个人用途，每个学校的格式可能有所不同，这里是通过抓包获取的课表信息  如果不会抓包可以试试直接套用我这个格式。）
-
-## 将微信一系列表情包：[表情名]写在系统提示词里使用效果--模型llama3.1:8b
-
-AI就学会了使用微信表情包和我进行对话
-![效果一](images/README/1729082801293.png)
-
-## 使用的模型为llama3.1
-
-![效果二](images/README/1729082774724.png)
-
-![1730622974167](images/README/1730622974167.png)
-
-这是微信公众号的配置
-
-## 运行项目
 
 
 ## 贡献
