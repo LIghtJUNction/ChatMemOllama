@@ -16,7 +16,7 @@
 更新日志/计划将发布在微信公众号（LIghtJUNction）
 正式版具体发布时间未定
 
-![Designer](https://github.com/user-attachments/assets/31ac7b3c-850d-4e45-8870-bc2be83a1c5c)
+
 
 [![Alt](https://repobeats.axiom.co/api/embed/61c5ea935a0eaf66e11c190407c20fa65da9ffa5.svg "Repobeats analytics image")](https://github.com/LIghtJUNction/ChatMemOllama/)
 
