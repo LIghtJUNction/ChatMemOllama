@@ -1,11 +1,10 @@
-# ChatMemOllama
+# WechatPublicAPI
 
 [![Stars](https://img.shields.io/github/stars/LIghtJUNction/ChatMemOllama?label=stars)](https://github.com/LIghtJUNction)
 [![Download](https://img.shields.io/github/downloads/LIghtJUNction/ChatMemOllama/total)](https://github.com/LIghtJUNction/ChatMemOllama/releases)
 [![Release](https://img.shields.io/github/v/release/LIghtJUNction/ChatMemOllama?label=release)](https://github.com/LIghtJUNction/ChatMemOllama/releases/latest)
 [![License](https://img.shields.io/github/license/LIghtJUNction/ChatMemOllama?label=License)](https://choosealicense.com/licenses/gpl-3.0)
 
-# ChatMemOllama
 
 新版将基于官方提供的接口开发
 
