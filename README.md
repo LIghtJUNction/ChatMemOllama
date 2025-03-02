@@ -1,5 +1,8 @@
-# WechatPublicAPI
+# ChatMemOllama 
+(公众号接入AI -- 未认证请参考本项目历史版本，局限较多，例如AI响应必须在5秒内且不可主动回复消息 )
 
+# WechatPublicAPI 
+( 认证后，开发一套API -- 进度:167/500 )
 [![Stars](https://img.shields.io/github/stars/LIghtJUNction/ChatMemOllama?label=stars)](https://github.com/LIghtJUNction)
 [![Download](https://img.shields.io/github/downloads/LIghtJUNction/ChatMemOllama/total)](https://github.com/LIghtJUNction/ChatMemOllama/releases)
 [![Release](https://img.shields.io/github/v/release/LIghtJUNction/ChatMemOllama?label=release)](https://github.com/LIghtJUNction/ChatMemOllama/releases/latest)
@@ -7,8 +10,6 @@
 
 
 新版将基于官方提供的接口开发
-
-基于微信对话开放平台
 
 将AI处理消息的部分抽离出来,仅提供消息接口
 
@@ -23,33 +24,13 @@
 
 [buy me a coffee](https://github.com/LIghtJUNction/lightjunction/tree/master/sponsor)
 
-v1.0 本地开发中 -------------------------------------------------------------------------
+# 关注本公众号 
+![638d0985d58e9e2cbddeb8963abda535](https://github.com/user-attachments/assets/4de3649e-7a7b-4e6e-ab4f-b97aa331dc64)
+说明：粉丝量低于 500 - > 无法认证 - > 5秒/2秒超时限制 - > 体验糟糕 - > 停止开发
 
-@AIVFS : [LIghtJUNction/AIVFS: Artificial Intelligence Virtual FileSystem](https://github.com/LIghtJUNction/AIVFS)
-
-@AIVFSU : [LIghtJUNction/AIVFSU: AIVFS Utilities](https://github.com/LIghtJUNction/AIVFSU)
-
-@AIVK : [LIghtJUNction/AIVK: AI内核计划](https://github.com/LIghtJUNction/AIVK)
-
-# 使用指南：
-1.https://chatbot.weixin.qq.com
-微信对话开发平台
-注册新机器人 -- 原微信开发平台服务器配置选项需关闭！
-
-2.点击 管理-应用绑定-开发API-申请
-审核很快
-记录关键信息 ： APPID / token / Encoding AESKey / 
-3.编辑 - 填写回调地址 
-内网运行 - 花生壳/其他工具 - 穿透到公网 - 填写
-
-
-
-
-
-
-
-
-
+目前进度 ： 167/500
+截图：
+![image](https://github.com/user-attachments/assets/dd064c2a-1d30-4321-815b-f140c25e2716)
 
 ## 贡献
 
